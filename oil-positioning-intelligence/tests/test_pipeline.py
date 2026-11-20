@@ -13,11 +13,11 @@ def sample_raw(day="2026-11-10", long=152998, short=82414):
         "cftc_contract_market_code": "067651", "report_date_as_yyyy_mm_dd": day + "T00:00:00.000",
         "contract_units": "(CONTRACTS OF 1,000 BARRELS)", "open_interest_all": "1800000",
         "m_money_positions_long_all": str(long), "m_money_positions_short_all": str(short),
-        "m_money_positions_spread_all": "15000", "prod_merc_positions_long": "350000",
+        "m_money_positions_spread": "15000", "prod_merc_positions_long": "350000",
         "prod_merc_positions_short": "500000", "swap_positions_long_all": "300000",
         "swap__positions_short_all": "250000", "swap__positions_spread_all": "32000",
-        "other_rept_positions_long_all": "30000", "other_rept_positions_short_all": "25000",
-        "other_rept_positions_spread_all": "5000",
+        "other_rept_positions_long": "30000", "other_rept_positions_short": "25000",
+        "other_rept_positions_spread": "5000",
     }
 
 
@@ -28,6 +28,25 @@ def test_live_report_arithmetic():
     assert row["spreading"] == 15000
     assert row["basis"] == "combined"
     assert row["contract_code"] == "067651"
+
+
+def test_cftc_live_api_field_names():
+    """Matches the exact shortened column names observed in a real API response."""
+    records = normalize([sample_raw()], "combined")
+    assert len(records) == 4
+    by_group = {r["cohort"]: r for r in records}
+    assert by_group["Managed Money"]["spreading"] == 15000
+    assert by_group["Other Reportables"]["long"] == 30000
+    assert by_group["Other Reportables"]["short"] == 25000
+    assert by_group["Other Reportables"]["spreading"] == 5000
+
+
+def test_old_field_aliases_remain_accepted():
+    raw = sample_raw()
+    for field in ("m_money_positions_spread", "other_rept_positions_long",
+                  "other_rept_positions_short", "other_rept_positions_spread"):
+        raw[field + "_all"] = raw.pop(field)
+    assert len(normalize([raw], "combined")) == 4
 
 
 def test_upsert_revised_and_no_duplicates(tmp_path):
