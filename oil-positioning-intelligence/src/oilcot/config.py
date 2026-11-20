@@ -32,7 +32,7 @@ COLUMNS = {
     "Managed Money": {
         "long": ("m_money_positions_long_all",),
         "short": ("m_money_positions_short_all",),
-        "spread": ("m_money_positions_spread_all",),
+        "spread": ("m_money_positions_spread", "m_money_positions_spread_all"),
     },
     "Producer/Merchant": {
         "long": ("prod_merc_positions_long", "prod_merc_positions_long_all"),
@@ -45,8 +45,8 @@ COLUMNS = {
         "spread": ("swap__positions_spread_all", "swap_positions_spread_all"),
     },
     "Other Reportables": {
-        "long": ("other_rept_positions_long_all",),
-        "short": ("other_rept_positions_short_all",),
-        "spread": ("other_rept_positions_spread_all",),
+        "long": ("other_rept_positions_long", "other_rept_positions_long_all"),
+        "short": ("other_rept_positions_short", "other_rept_positions_short_all"),
+        "spread": ("other_rept_positions_spread", "other_rept_positions_spread_all"),
     },
 }
