@@ -1,6 +1,13 @@
 name: Update COT and Dashboard
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-cot.yml'
+      - 'oil-positioning-intelligence/src/**'
+      - 'oil-positioning-intelligence/tests/**'
+      - 'oil-positioning-intelligence/requirements.txt'
   schedule:
     # 06:37 and 12:37 Singapore time
     - cron: '37 6,12 * * *'
