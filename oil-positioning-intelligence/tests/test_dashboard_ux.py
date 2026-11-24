@@ -26,7 +26,12 @@ def test_deep_dive_explicitly_disclaims_trades():
     page = (ROOT / "templates" / "dashboard.html").read_text(encoding="utf-8")
     assert 'id="flows-chart"' in page
     assert 'id="cohort-rows"' in page
-    assert "not identified transactions" in page
+    assert "Spreading is shown as a KPI above" in page
+    assert "id=\"oi-context\"" in page
+    assert "function ordinal(v)" in page
+    assert "q<=25?" in page
+    assert ".layout{width:100%;max-width:none" in page
+    assert "not identified trades" in page
     assert "Non-reportable positions are not in this version" in page
 
 
