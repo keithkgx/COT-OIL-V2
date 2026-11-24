@@ -100,3 +100,30 @@ def test_fetched_pagination_and_request_parameters():
     assert "kh3c-gbw2.json" in calls[0][0]
     assert "067651" in calls[0][1]["params"]["$where"]
     assert calls[0][1]["params"]["$order"].startswith("report_date")
+
+
+def test_cftc_transient_timeout_is_retried(monkeypatch):
+    """The production request path retries timeouts before declaring the feed unavailable."""
+    import requests
+    from oilcot import fetch
+    calls = []
+
+    class Response:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return [sample_raw()]
+
+    def sometimes_timeout(url, **kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            raise requests.Timeout("temporary CFTC gateway delay")
+        return Response()
+
+    monkeypatch.setattr(fetch.requests, "get", sometimes_timeout)
+    monkeypatch.setattr(fetch.time, "sleep", lambda seconds: None)
+    rows = fetch.get_rows("combined", since="2026-11-01")
+    assert len(rows) == 1
+    assert len(calls) == 2
+    assert calls[0]["timeout"] == 60
