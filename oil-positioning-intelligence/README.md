@@ -14,12 +14,29 @@ The dashboard now prioritizes **three questions** before the detailed charts: wh
 
 - **As-of week selector:** inspect any observation in the embedded five-year view, without applying future observations to the selected week's display. The default remains the latest available CFTC observation.
 - **Desk brief:** a compact three-part comparison using the size of the change relative to the current market's open interest, 3-year net/OI rank, and cross-market directional breadth. These are *descriptive* statistics, not trading signals.
+- **Layout:** full-width desk screens, clear separation of market intelligence from the selected market, and accurate lower-quartile commentary.
+- **Deep dive:** directional long/short/net chart excludes separately reported spreading to avoid scale distortion; historical net-contribution chart defaults to the latest 12 months.
 - **Market overview table:** includes report-on-report changes, four-week changes, 1-year and 3-year percentiles, open interest and explicit observation dates.
 - **Market deep dive:** adds historical changes in long versus short positioning, plus a concise four-category participant table.
 - **Report basis:** Futures and Options Combined remains the default; Futures Only remains selectable. The two are not additive or directly comparable.
 - **Access:** remains a self-contained downloadable HTML file in the private repository. GitHub Pages is not enabled.
 
 **Caveats:** Changes in holdings do not identify individual executions. Current dashboards use the public CFTC data for WTI, ULSD and RBOB; they do not include ICE benchmark Brent or Gasoil. Historic selection uses recorded observation dates rather than publication timestamps. Non-reportable trader positions and price series remain out of scope for this first interface revision.
+
+## GitHub Pages: optional public dashboard (no Railway)
+
+The dashboard can be shared through GitHub Pages without making the historical-data scripts run in the browser. Only the generated `dashboard/index.html` is uploaded to Pages; the private repository remains the data-processing source.
+
+To turn on public hosting **after reviewing the output and confirming it contains no sensitive information**:
+
+1. In the COT-OIL-V2 GitHub repository, open **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+2. Open **Settings → Secrets and variables → Actions → Variables → New repository variable**. Set the name to `PUBLISH_PAGES` and value to `true`.
+3. Run **Actions → Update COT and Dashboard → Run workflow** on `main`. After the update job succeeds, the publish job will upload only `oil-positioning-intelligence/dashboard/` to GitHub Pages.
+4. Find the verified live address in **Settings → Pages** or the **Publish public dashboard (opt-in)** job. The expected URL for this repository is `https://keithkgx.github.io/COT-OIL-V2/`, but do not assume it is live until GitHub reports successful deployment.
+
+**Plan limitation:** GitHub Pages on a private repository generally requires GitHub Pro, Team or Enterprise. If Pages cannot be enabled while the repository is private, either make the repository public after reviewing its contents or use a separate public website repository for the generated dashboard. Publishing a site is public internet disclosure even if its source repository remains private.
+
+The `PUBLISH_PAGES` variable prevents failed deployment jobs from interfering with the scheduled CFTC refresh before Pages has been configured. Setting it to `false` stops subsequent public deployments but does not unpublish already public content.
 
 ## How the project works
 
@@ -81,7 +98,7 @@ git push -u origin main
 4. Open **Actions → Update COT and Dashboard → Run workflow** to perform the first cloud backfill. The initial run downloads history and commits `data/cot_history.csv` plus `dashboard/index.html`. The job then checks twice daily (06:37 and 12:37 Singapore time).
 5. Open the `dashboard/index.html` file from a local clone, or use **Actions → artifacts** if adding an artifact upload step. GitHub's code preview is not the interactive dashboard; **download or clone the HTML to open it in a browser**.
 
-GitHub Pages is **not enabled**. This is a private-repository-first design. Do not publish the raw dashboard or data without checking the relevant source terms.
+GitHub Pages is opt-in using the repository variable `PUBLISH_PAGES=true` and the GitHub Pages GitHub Actions source. The public site must contain only authorized public CFTC data, not internal Pertamina information.
 
 ## GitHub automation limitations
 
