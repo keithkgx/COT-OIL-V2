@@ -111,3 +111,34 @@ jobs:
           else
             echo 'No updated observations; nothing to commit.'
           fi
+
+  publish:
+    name: Publish public dashboard (opt-in)
+    needs: update
+    if: ${{ github.event_name != 'pull_request' && vars.PUBLISH_PAGES == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout latest main data and dashboard
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload public dashboard only
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: oil-positioning-intelligence/dashboard
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
