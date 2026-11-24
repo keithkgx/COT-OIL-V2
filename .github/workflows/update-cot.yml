@@ -1,6 +1,13 @@
 name: Update COT and Dashboard
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-cot.yml'
+      - 'oil-positioning-intelligence/src/**'
+      - 'oil-positioning-intelligence/templates/**'
+      - 'oil-positioning-intelligence/tests/**'
   push:
     branches: [main]
     paths:
@@ -48,13 +55,27 @@ jobs:
           PYTHONPATH: src
         run: python -m pytest -q
 
+      - name: Validate embedded dashboard JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('templates/dashboard.html').read_text(encoding='utf-8')
+          blocks = re.findall(r'<script>(.*?)</script>', html, flags=re.S)
+          assert blocks and 'const DATA=__EMBEDDED_DATA__' in blocks[-1]
+          Path('/tmp/oilcot-dashboard.js').write_text(blocks[-1], encoding='utf-8')
+          PY
+          node --check /tmp/oilcot-dashboard.js
+
       - name: Fetch official CFTC data and rebuild dashboard
+        if: github.event_name != 'pull_request'
         env:
           PYTHONPATH: src
           CFTC_APP_TOKEN: ${{ secrets.CFTC_APP_TOKEN }}
         run: python -m oilcot.cli refresh
 
       - name: Commit updated observations and dashboard
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
