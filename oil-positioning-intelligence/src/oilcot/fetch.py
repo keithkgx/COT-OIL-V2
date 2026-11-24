@@ -38,13 +38,31 @@ def get_rows(basis: str, since: str = "2006-06-01", page_size: int = 5000,
         token = os.getenv("CFTC_APP_TOKEN")
         if token:
             headers["X-App-Token"] = token
-        try:
-            # Test adapters can supply a mock request_get with the same signature.
-            response = get(url, params=params, headers=headers, timeout=35)
-            response.raise_for_status()
-            chunk = response.json()
-        except (requests.RequestException, ValueError) as exc:
-            raise SourceError(f"CFTC {basis} request failed (offset {offset}): {exc}") from exc
+        # CFTC's PRE occasionally times out. Retry transient transport failures
+        # while leaving schema/JSON errors and non-retryable HTTP responses visible.
+        attempts = 1 if request_get is not None else 3
+        for attempt in range(attempts):
+            try:
+                response = get(url, params=params, headers=headers, timeout=60)
+                response.raise_for_status()
+                chunk = response.json()
+                break
+            except (requests.Timeout, requests.ConnectionError) as exc:
+                retryable = True
+            except requests.HTTPError as exc:
+                status = getattr(getattr(exc, "response", None), "status_code", None)
+                retryable = status in (429, 500, 502, 503, 504)
+            except (requests.RequestException, ValueError) as exc:
+                raise SourceError(
+                    f"CFTC {basis} invalid response (offset {offset}): {exc}"
+                ) from exc
+            if not retryable or attempt + 1 == attempts:
+                raise SourceError(
+                    f"CFTC {basis} request failed (offset {offset}, attempt {attempt + 1}/{attempts}): {exc}"
+                ) from exc
+            delay = min(2 * (2 ** attempt), 12)
+            print(f"WARNING: CFTC {basis} transient error at offset {offset}; retrying in {delay}s")
+            time.sleep(delay)
         if not isinstance(chunk, list):
             raise SourceError(f"Unexpected CFTC JSON structure for {basis} at offset {offset}")
         if chunk and any(not isinstance(item, dict) for item in chunk):
