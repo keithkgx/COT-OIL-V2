@@ -67,6 +67,30 @@ jobs:
           PY
           node --check /tmp/oilcot-dashboard.js
 
+      - name: Build dashboard preview from the committed historical data
+        if: github.event_name == 'pull_request'
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m oilcot.cli build
+          python - <<'PY'
+          from pathlib import Path
+          page = Path('dashboard/index.html')
+          assert page.exists() and page.stat().st_size > 100_000
+          text = page.read_text(encoding='utf-8')
+          for needle in ('id="asof"', 'id="desk-brief"', 'id="flows-chart"', '25'):
+              assert needle in text, needle
+          print(f'Dashboard preview generated: {page.stat().st_size:,} bytes')
+          PY
+
+      - name: Upload reviewable HTML dashboard
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: oil-cot-dashboard-preview
+          path: oil-positioning-intelligence/dashboard/index.html
+          retention-days: 7
+
       - name: Fetch official CFTC data and rebuild dashboard
         if: github.event_name != 'pull_request'
         env:
