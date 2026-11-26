@@ -42,8 +42,8 @@ def test_main_dashboard_has_auditable_metrics():
 def test_hidden_tab_plotly_resizing_fix():
     page = page_source()
     assert "el.closest('.page.hidden')" in page
-    assert "if(active==='deep')renderDeep(s,r,rows)" in page
-    assert "else if(active==='overview')renderOverview(s,r)" in page
+    assert "if(active==='deep')renderDeep(s,r,selectedHistory(s))" in page
+    assert "else if(active==='overview')renderOverview(s)" in page
     assert "function resizeVisibleCharts()" in page
     assert "ResizeObserver" in page
     assert "autosize:true" in page
@@ -77,7 +77,7 @@ def test_v4_market_comparison_uses_normalized_changes_and_source_alignment():
     source = page_source()
     for needle in ("id=\"market-change-chart\"", "id=\"cross-highlights\"",
                    "id=\"cross-asof-note\"", "change_net_oi_pp",
-                   "change_28d_net_oi_pp", "different latest position dates"):
+                   "change_28d_net_oi_pp", "common previous report date"):
         assert needle in source, needle
 
 

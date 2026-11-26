@@ -11,12 +11,12 @@
 The site is organized around the questions a market analyst would ask:
 
 1. **Where are traders positioned?** Net contracts (long − short), total open interest, net position as a share of OI, and historical net/OI percentile.
-2. **How did they get there?** Long, short and net positioning over time for the selected contract.
-3. **What's driving the change?** Long-side and short-side contributions to the most recent change, plus the trailing 12-month history.
+2. **How did they get there?** Switch the history chart between long, short and net contracts, net/OI, and the rolling three-year net/OI percentile.
+3. **What's driving the change?** Break down the latest move in contracts by long and short holdings, then see how holdings and open interest each contributed to the net/OI change.
 4. **How does participation look?** Total open interest and positions by CFTC trader group.
-5. **How do related markets compare?** A separate **Compare markets** tab shows comparable net/OI measures, rather than adding unlike contracts together.
+5. **How do related markets compare?** **Compare markets** plots historical rank against four-week net/OI change and compares shifts over matching date intervals.
 
-Select an **as-of position date**, instrument, participant category, report basis, and historical window. You can also download selected records on the **Data & methodology** tab.
+Select an **as-of position date**, instrument, participant category, report basis, and historical window. The CSV on **Data & methodology** includes every observation that matches these filters.
 
 ## Current coverage
 
@@ -34,7 +34,7 @@ Select an **as-of position date**, instrument, participant category, report basi
 
 The public site is a **static, self-contained HTML dashboard**. It uses no login, server-side analytics or live browser API requests.
 
-- GitHub Actions downloads official CFTC observations and validates the data.
+- GitHub Actions is scheduled to check for new official CFTC observations daily at 06:37 and 12:37 Singapore time.
 - Python computes positioning, OI-normalized measures and causal historical percentiles.
 - A generated standalone HTML file is committed in [`dashboard/index.html`](oil-positioning-intelligence/dashboard/index.html) and deployed through GitHub Pages.
 - A scheduled check can succeed even when there is no new position observation. The **latest position date** is shown on the site.
