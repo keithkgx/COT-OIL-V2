@@ -15,7 +15,7 @@ def check_chart(page, chart_id: str):
     locator = page.locator("#" + chart_id)
     page.wait_for_function(
         "(id) => !!document.querySelector('#'+id+' .svg-container')",
-        chart_id,
+        arg=chart_id,
         timeout=30000,
     )
     page.wait_for_timeout(400)
