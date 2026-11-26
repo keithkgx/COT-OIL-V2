@@ -63,3 +63,29 @@ def test_offline_standalone_builder():
     source = (ROOT / "src" / "oilcot" / "build.py").read_text(encoding="utf-8")
     assert "get_plotlyjs" in source
     assert "output.write_text(html" in source
+
+
+def test_v4_attribution_has_visible_numeric_values_and_a_durable_explanation():
+    source = page_source()
+    for needle in ("textposition:'outside'", "textfont:{color:'#f2f7ff',size:15",
+                   'id="attribution-note"', "strong>Net change",
+                   "short-side contribution", "cliponaxis:false"):
+        assert needle in source, needle
+
+
+def test_v4_market_comparison_uses_normalized_changes_and_source_alignment():
+    source = page_source()
+    for needle in ("id=\"market-change-chart\"", "id=\"cross-highlights\"",
+                   "id=\"cross-asof-note\"", "change_net_oi_pp",
+                   "change_28d_net_oi_pp", "different latest position dates"):
+        assert needle in source, needle
+
+
+def test_v4_single_market_readout_and_groups():
+    source = page_source()
+    assert 'id="market-momentum"' in source
+    assert 'id="cohort-chart"' in source
+    assert "function marketRegime(" in source
+    assert "function contributionStory(" in source
+    # No 'All net' aggregate, which would approach zero once counterparties balance.
+    assert '<option>All Trader Groups</option>' not in source
