@@ -58,7 +58,8 @@ def _render(records: list[dict], output: Path, private: bool = False) -> dict:
         "private": private, "source_dates": source_dates,
         "markets": [{"key": m.key, "label": m.label,
                      "enabled": m.enabled or (private and (m.source, m.key) in available_markets),
-                     "source": m.source, "units": m.units} for m in MARKETS.values()],
+                     "source": m.source, "units": m.units}
+                    for m in MARKETS.values() if m.enabled or private],
     }
     data = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).replace("<", "\\u003c")
     template = (ROOT / "templates" / "dashboard.html").read_text(encoding="utf-8")

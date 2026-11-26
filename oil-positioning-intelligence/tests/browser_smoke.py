@@ -138,6 +138,7 @@ def main():
         page.on("pageerror", lambda err: errors.append(str(err)))
         page.goto(REPORT.resolve().as_uri(), wait_until="load", timeout=90000)
         page.get_by_role("button", name="Market analysis").wait_for()
+        expect(page.locator("#market option")).to_have_count(3)
         check_chart(page, "positions-chart")
         check_chart(page, "flows-chart")
         check_chart(page, "attribution-chart")
@@ -159,6 +160,8 @@ def main():
         assert page.locator("#positions-chart").evaluate("(el) => el.layout.yaxis.range") == [0, 100]
         page.locator("#history-metric").select_option("contracts")
         page.get_by_role("button", name="Compare markets").click()
+        expect(page.locator("#overview")).not_to_contain_text("ICE Brent")
+        expect(page.locator("#overview")).not_to_contain_text("ICE Low Sulphur Gasoil")
         check_chart(page, "overview-chart")
         check_chart(page, "market-change-chart")
         check_chart(page, "positioning-map")
