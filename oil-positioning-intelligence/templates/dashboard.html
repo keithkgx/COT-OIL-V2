@@ -95,7 +95,7 @@
       <div class="stage-heading"><span class="stage-number">03</span><div><h2>What's driving the change?</h2><p>Decompose the latest report and place the movement in the context of the past 12 months.</p></div></div>
       <div class="analysis-split">
         <div class="panel"><h3>Latest report-on-report attribution</h3><p class="note">Net change = change in longs − change in shorts</p><div class="chart" id="attribution-chart"></div><div id="attribution-note" class="attribution-note"></div></div>
-        <div class="panel"><h3>Historical long/short contributions</h3><p class="note">Fixed 12-month window · long-side Δ and short-side −Δ, with the net change overlaid</p><div class="chart" id="flows-chart"></div></div>
+        <div class="panel"><h3>Historical long/short contributions</h3><p class="note">Fixed 12-month window · teal = Δ longs, blue = −Δ shorts, gold = Δ net. Above zero increases net; below zero reduces it.</p><div class="chart" id="flows-chart"></div></div>
       </div>
 
       <div class="stage-heading"><span class="stage-number">04</span><div><h2>Market participation & positioning context</h2><p>Check overall market participation and how other categories are positioned.</p></div></div>
@@ -254,7 +254,7 @@ $('attribution-note').innerHTML=r&&isNumber(longContribution)&&isNumber(shortCon
 const limit=new Date((r?.report_date||s.asof)+'T00:00:00Z');limit.setUTCFullYear(limit.getUTCFullYear()-1);const changes=rows.filter(z=>z.report_date>=limit.toISOString().slice(0,10)&&isNumber(z.change_long)&&isNumber(z.change_short));
 draw('flows-chart',[
 {x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_long),type:'bar',name:'Δ longs',marker:{color:'#40c8a4'}},
-{x:changes.map(z=>z.report_date),y:changes.map(z=>-z.change_short),type:'bar',name:'−Δ shorts',marker:{color:'#fa8d84'}},
+{x:changes.map(z=>z.report_date),y:changes.map(z=>-z.change_short),type:'bar',name:'−Δ shorts',marker:{color:'#78aef5'}},
 {x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_report),type:'scatter',mode:'lines',name:'Net change',line:{color:'#efc07d',width:2}}
 ],{barmode:'relative',yaxis:{title:'Contracts per observation'}});
 $('oi-context').textContent='Total outstanding contracts · '+(r&&isNumber(r.change_oi)?signed(r.change_oi)+' vs prior observation ('+signedDecimal(r.change_oi_pct,2)+'% vs prior OI)':'change unavailable');
