@@ -43,10 +43,13 @@ PYTHONPATH=src python -m oilcot.cli build
 | --- | --- |
 | `python -m oilcot.cli status` | Check observation counts, markets and latest stored date |
 | `python -m oilcot.cli build` | Rebuild HTML from the existing CSV without a web request |
+| `python -m oilcot.cli build-private --ice-data FILE --output FILE` | Build a local CFTC + ICE dashboard from an authorized, normalized ICE export |
 | `python -m oilcot.cli refresh` | Query both CFTC report bases for the overlapping latest 90 days and rebuild the dashboard |
 | `python -m oilcot.cli backfill` | Retrieve full history for all **enabled CFTC codes** and rebuild the dashboard |
 
 The commands assume `PYTHONPATH=src` is set. CFTC API requests do not require credentials for ordinary access, but an optional `CFTC_APP_TOKEN` environment variable is supported. Never commit an API token.
+
+The [ICE setup guide](docs/ice-brent-gasoil-integration.md) covers the accepted CSV schema, local output path, and how to refresh the ICE view. GitHub Actions runs the public CFTC workflow.
 
 ## Repo structure
 
@@ -60,6 +63,7 @@ COT-OIL-V2/
     │   ├── config.py                 Market codes, CFTC report types and column aliases
     │   ├── fetch.py                  Paginated Socrata JSON client
     │   ├── normalize.py              Data-quality controls and canonical row model
+    │   ├── ice.py                    Validates normalized ICE CSV exports for local builds
     │   ├── store.py                  Idempotent historical CSV upsert
     │   ├── metrics.py                Causal rolling metrics and comparisons
     │   ├── build.py                  Embeds data + Plotly into a standalone HTML file
@@ -103,7 +107,7 @@ A successful fetch does not mean a new report has been published. Always inspect
 - `net_oi_pct = 100 * net / open_interest`.
 - `change_report = current net - prior observed net` (not necessarily seven days).
 - `change_long = current long - prior long`; `change_short = current short - prior short`. Therefore `change_report = change_long - change_short`.
-- 7-day and 28-day comparisons use calendar-aware lookbacks with tolerances for absent report dates. The comparison tab ranks changes only when at least two markets have the same selected position date and the same reference date for that metric.
+- 7-day and 28-day comparisons use calendar-aware lookbacks with tolerances for absent report dates. The comparison tab ranks changes only when at least two markets have the same selected position date and the same reference date for that metric. The shared-date control uses the latest date on or before the selected date for which every market in the view has an observation.
 - The report-on-report change in net/OI splits into `100 × (net − prior net) / prior OI` from holdings and `100 × net × (1 / OI − 1 / prior OI)` from open interest. Both terms are in percentage points. Small discrepancies in the displayed sum can arise from rounding.
 - 1Y and 3Y percentiles use a causal empirical midrank over comparable weekly-equivalent observations in the trailing calendar window; they never use future readings.
 - Percentiles are relative to a contract's own history, not a probability of a price move.
@@ -118,6 +122,6 @@ If a scheduled workflow fails, inspect **Update COT and Dashboard → update** s
 
 ## Usage and attribution
 
-The project is an independent research dashboard and not an official exchange/CFTC or employer application. Only public CFTC data is included; ICE Brent/Gasoil delivery and redistribution have not been enabled. Do not commit proprietary trading-desk files, internal commentary or secrets.
+The project is an independent research dashboard. The public workflow uses CFTC data, and the local ICE view takes user-supplied authorized files. Keep proprietary data, internal commentary and secrets out of the repository.
 
 No open-source license has been chosen yet. Public GitHub visibility does not automatically license third-party reuse of project code.
