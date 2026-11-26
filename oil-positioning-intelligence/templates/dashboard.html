@@ -9,6 +9,18 @@
 :root{--bg:#0a101b;--panel:#121c2b;--panel2:#162439;--border:#263548;--text:#ecf3fa;--muted:#91a1b7;--green:#40c8a4;--red:#fa8d84;--blue:#78aef5;--gold:#efc07d}*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}.layout{width:100%;max-width:none;margin:0;padding:24px clamp(16px,2.5vw,56px) 64px}.head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}.mark{font-size:11px;letter-spacing:.20em;font-weight:700;color:var(--green);text-transform:uppercase}.title{font-size:30px;font-weight:750;letter-spacing:-.04em;margin:4px 0}.subtitle{color:var(--muted);font-size:13px}.status{display:flex;gap:9px;align-items:center;background:var(--panel);border:1px solid var(--border);padding:12px 15px;border-radius:12px;color:var(--muted);font-size:12px}.status-dot{display:inline-block;height:8px;width:8px;border-radius:50%;background:var(--gold)}.tabs{display:flex;gap:8px;border-bottom:1px solid var(--border);margin:18px 0 22px}.tabs button{background:transparent;border:0;color:var(--muted);padding:12px 17px;font:600 13px inherit;cursor:pointer;border-bottom:2px solid transparent}.tabs button.active{color:var(--text);border-color:var(--green)}.filters{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 21px}.filter{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em}.filter select{background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 30px 9px 12px;min-width:170px;max-width:240px}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.card,.panel{border:1px solid var(--border);background:var(--panel);border-radius:13px}.card{padding:19px 20px}.label{font-size:12px;color:var(--muted);margin-bottom:8px}.value{font-size:27px;font-weight:750;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.detail{font-size:12px;color:var(--muted);margin-top:7px}.pos{color:var(--green)}.neg{color:var(--red)}.grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(350px,1fr);gap:15px;margin-top:15px}.panel{padding:21px;min-width:0}.panel h3{margin:0;font-size:16px;letter-spacing:-.01em}.panel .note{font-size:12px;color:var(--muted);margin:6px 0 10px}.chart{height:390px}.full{grid-column:1/-1}.table-wrap{overflow-x:auto}.table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}.table td,.table th{padding:12px 9px;border-bottom:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums}.table td:first-child,.table th:first-child{text-align:left}.table th{color:var(--muted);font-weight:550}.table tbody tr:hover{background:#1b2d44}.pill{border-radius:5px;padding:3px 8px;font-size:11px;font-weight:700;background:#283549;color:var(--muted)}.pill.warn{background:#564028;color:var(--gold)}.buttons{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}button.action{background:var(--panel2);border:1px solid var(--border);padding:9px 12px;border-radius:8px;color:var(--text);cursor:pointer}button.action:hover{border-color:var(--blue)}.empty{padding:45px 20px;text-align:center;border:1px dashed #526175;border-radius:12px;background:#111d2d}.empty h2{margin:8px 0;font-size:21px}.empty p{color:var(--muted);max-width:600px;margin:8px auto}.empty code{background:#27354a;border-radius:4px;padding:3px 5px;color:#d8e9ff}.muted{color:var(--muted)}.hidden{display:none!important}.explainer{color:var(--text);font-size:14px;line-height:1.8}.small{font-size:12px;color:var(--muted)}.footer{margin-top:25px;color:#7e8da0;font-size:12px}.method{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.method>div{background:var(--panel2);padding:12px;border-radius:8px}.method strong{font-size:12px}.method p{color:var(--muted);font-size:12px;margin:4px 0}.accent{color:var(--green)}.spark{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px}.information{border-left:3px solid var(--gold);padding:11px 15px;background:#252235;border-radius:4px;color:#efdcb7;font-size:12px;margin-top:14px}a{color:var(--blue)}@media(max-width:900px){.layout{padding:19px 16px}.head{align-items:start;flex-direction:column}.grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.method{grid-template-columns:1fr}}@media(max-width:440px){.cards{grid-template-columns:1fr}.title{font-size:24px}.tabs button{font-size:12px;padding:10px}.filter select{min-width:145px}.value{font-size:24px}}
 
 /* Desk briefing and percentile cues */
+.stage-heading{display:flex;align-items:flex-start;gap:12px;margin:25px 0 11px}
+.stage-heading h2{margin:0;font-size:17px;line-height:1.4}
+.stage-heading p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.stage-number{width:32px;min-width:32px;height:32px;display:grid;place-items:center;border:1px solid #376d77;border-radius:9px;background:#122e37;color:var(--green);font-size:13px;font-weight:800}
+.analysis-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px}
+.insight-panel{margin-top:14px;border-left:3px solid var(--green)}
+.insight-panel .explainer{max-width:125ch;line-height:1.65}
+.insight-panel .explainer p{margin:8px 0}
+.comparison-table{margin-top:15px}
+@media(max-width:1100px){.analysis-split{grid-template-columns:1fr}}
+@media(min-width:1650px){.layout{padding-left:3vw;padding-right:3vw}.analysis-split{gap:18px}}
+
 .section-heading{display:flex;align-items:baseline;gap:12px;justify-content:space-between;margin:12px 0 10px}
 .section-heading h2{font-size:16px;line-height:1.3;margin:0;font-weight:750}
 .section-heading span{font-size:12px;color:var(--muted)}
@@ -39,7 +51,7 @@
     <div><div class="mark">Commodity Analytics / COT</div><h1 class="title">Oil Positioning Intelligence</h1><div class="subtitle">Institutional positioning across the oil complex · official CFTC reports</div></div>
     <div class="status"><span class="status-dot" id="status-dot"></span><span id="status-text">Awaiting verified source data</span></div>
   </header>
-  <nav class="tabs" aria-label="Dashboard pages"><button class="active" data-tab="overview">Market overview</button><button data-tab="deep">Market deep dive</button><button data-tab="history">History & methodology</button></nav>
+  <nav class="tabs" aria-label="Dashboard pages"><button class="active" data-tab="deep">Market analysis</button><button data-tab="overview">Compare markets</button><button data-tab="history">Data & methodology</button></nav>
   <div class="filters" id="filters">
     <label class="filter">AS-OF REPORT<select id="asof" aria-label="Historical positioning week"></select></label>
     <label class="filter">MARKET<select id="market"></select></label>
@@ -50,16 +62,31 @@
   <div class="asof-caption" id="asof-caption"></div>
   <div class="empty" id="no-data"><div style="font-size:30px">▥</div><h2>No verified live data imported yet</h2><p>This is an operational dashboard shell, not a demo with fabricated market figures. Run the included Python workflow to retrieve official CFTC data and regenerate this file.</p><p><code>PYTHONPATH=src python -m oilcot.cli backfill</code></p><p class="small">The first run requires internet connectivity. ICE markets stay disabled until authorized access is configured.</p></div>
   <main id="content" class="hidden">
-    <section id="overview" class="page">
-      <div class="section-heading"><h2>Market intelligence</h2><span>Three CFTC petroleum markets · positioning, not price signals</span></div>
-      <div class="desk-brief" id="desk-brief"></div>
-      <div class="section-heading"><h2 id="selected-market-title">Selected market snapshot</h2><span>Based on market and trader-category filters</span></div>
+    <section id="deep" class="page">
+      <div class="stage-heading"><span class="stage-number">01</span><div><h2 id="analysis-title">Positioning snapshot</h2><p>What is the current net exposure, how big is the market, and how unusual is the positioning?</p></div></div>
       <div class="cards" id="kpis"></div>
-      <div class="grid"><div class="panel"><h3>Cross-market net positioning / OI</h3><p class="note">Selected trader category net positioning as % of open interest. Compare on a normalized scale.</p><div class="chart" id="overview-chart"></div></div><div class="panel"><h3>Selected-market interpretation</h3><p class="note">Drivers and historical context for the selected as-of observation</p><div id="commentary" class="explainer"></div></div><div class="panel full"><h3>Positioning comparison</h3><p class="note">Separate instruments are not summed; rankings use a consistent weekly sample</p><div class="table-wrap"><table class="table"><thead><tr><th>Market</th><th>Net contracts</th><th>Report change</th><th>4W change</th><th>Net / OI</th><th>1Y rank</th><th>3Y rank</th><th>OI contracts</th><th>Data date</th></tr></thead><tbody id="overview-rows"></tbody></table></div><p class="small" style="margin:12px 0 0">Coverage: CFTC WTI, ULSD and RBOB. ICE Brent and Gasoil excluded pending authorized data access.</p></div></div>
+      <div class="panel insight-panel"><h3>Analyst readout</h3><div id="commentary" class="explainer"></div></div>
+
+      <div class="stage-heading"><span class="stage-number">02</span><div><h2>Positioning history</h2><p>Understand the trend in speculative net, long and short exposures before interpreting the latest change.</p></div></div>
+      <div class="panel"><h3>Long, short and net positioning</h3><p class="note">Directional futures-equivalent contracts · spreading is shown separately in the data table</p><div class="chart" id="positions-chart"></div></div>
+
+      <div class="stage-heading"><span class="stage-number">03</span><div><h2>What's driving the change?</h2><p>Decompose the latest report and place the movement in the context of the past 12 months.</p></div></div>
+      <div class="analysis-split">
+        <div class="panel"><h3>Latest report-on-report attribution</h3><p class="note">Net change = change in longs − change in shorts</p><div class="chart" id="attribution-chart"></div><div id="attribution-note" class="small"></div></div>
+        <div class="panel"><h3>Historical long/short contributions</h3><p class="note">Fixed 12-month window · long-side Δ and short-side −Δ, with the net change overlaid</p><div class="chart" id="flows-chart"></div></div>
+      </div>
+
+      <div class="stage-heading"><span class="stage-number">04</span><div><h2>Market participation & positioning context</h2><p>Check overall market participation and how other categories are positioned.</p></div></div>
+      <div class="analysis-split">
+        <div class="panel"><h3>Open interest</h3><p class="note" id="oi-context">Outstanding contracts and latest change</p><div class="chart" id="oi-chart"></div></div>
+        <div class="panel"><h3>Participant positioning</h3><p class="note">CFTC Disaggregated categories · reported net exposure; categories are not individual traders</p><div class="table-wrap"><table class="table"><thead><tr><th>Category</th><th>Net</th><th>Change</th><th>Net/OI</th><th>3Y rank</th></tr></thead><tbody id="cohort-rows"></tbody></table></div><p class="small">Non-reportable positions are not included in this table.</p></div>
+      </div>
     </section>
-    <section id="deep" class="page hidden">
-      <div class="cards" id="deep-kpis"></div>
-      <div class="grid"><div class="panel full"><h3>Directional long, short and net positioning</h3><p class="note">Spreading is shown as a KPI above, not on this axis, to make directional movements easier to see</p><div class="chart" style="height:400px" id="positions-chart"></div></div><div class="panel"><h3>Open interest</h3><p class="note" id="oi-context">Outstanding contracts and change since prior observation</p><div class="chart" id="oi-chart"></div></div><div class="panel"><h3>Latest report-on-report attribution</h3><p class="note">Changes in long and short positions, in contracts</p><div class="chart" id="attribution-chart"></div><div id="attribution-note" class="small"></div></div><div class="panel full"><h3>Historical long/short contributions to net positioning</h3><p class="note">Fixed 12-month view for readability (independent of the History selector). Long contribution = change in longs; short contribution = negative change in shorts. Holdings, not identified trades.</p><div class="chart" style="height:360px" id="flows-chart"></div></div><div class="panel full"><h3>Who holds the other side?</h3><p class="note">A compact view of the four reportable trader categories. Non-reportable positions are not in this version.</p><div class="table-wrap"><table class="table"><thead><tr><th>Trader category</th><th>Net</th><th>Report change</th><th>4W change</th><th>Net / OI</th><th>3Y rank</th></tr></thead><tbody id="cohort-rows"></tbody></table></div></div></div>
+
+    <section id="overview" class="page hidden">
+      <div class="stage-heading"><span class="stage-number">A</span><div><h2>Compare oil markets</h2><p>Compare different contracts using net/OI rather than the absolute count of positions. This is a separate contextual view.</p></div></div>
+      <div class="panel"><h3>Relative speculative positioning</h3><p class="note">Selected trader category net/OI across covered markets. Contract sizes and market structure differ.</p><div class="chart" id="overview-chart"></div></div>
+      <div class="panel comparison-table"><h3>Cross-market positioning table</h3><p class="note">A market's percentile is relative to its own history, not its relative size against another market.</p><div class="table-wrap"><table class="table"><thead><tr><th>Market</th><th>Net contracts</th><th>Report change</th><th>4W change</th><th>Net/OI</th><th>1Y rank</th><th>3Y rank</th><th>OI contracts</th><th>As-of</th></tr></thead><tbody id="overview-rows"></tbody></table></div><p class="small">Coverage is currently limited to selected CFTC contracts. Main ICE Brent and ICE Gasoil benchmarks require a separately authorized source.</p></div>
     </section>
     <section id="history" class="page hidden">
       <div class="panel"><h3>Historical observations</h3><p class="note">Latest 75 selected observations; full canonical history is stored at data/cot_history.csv</p><div class="buttons"><button class="action" id="download-selected">Download selected CSV</button><button class="action" id="download-html">Save HTML copy</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Report date</th><th>Long</th><th>Short</th><th>Spreading</th><th>Net</th><th>Net/OI</th><th>1Y rank</th><th>3Y rank</th><th>Change vs previous</th></tr></thead><tbody id="history-rows"></tbody></table></div></div>
@@ -107,35 +134,38 @@ return '<p><strong>'+market+':</strong> '+esc(document.getElementById('cohort').
 }
 function marketOptions(){for(const m of DATA.markets){const o=document.createElement('option');o.value=m.key;o.textContent=m.label+(m.enabled?'':' — ICE pending');o.disabled=!m.enabled;$('market').appendChild(o)}$('market').value='WTI'}
 function renderOverview(s,r){
-$('selected-market-title').textContent='Selected market snapshot · '+(r?r.market_label:s.market)+' · '+s.cohort;
 const rows=DATA.markets.filter(m=>m.enabled).map(m=>atMarket(m,s)).filter(Boolean);
-$('desk-brief').innerHTML=deskBrief(rows,s);
-$('kpis').innerHTML=card('Net positioning',r?signed(r.net):'—',s.market+' · '+s.cohort+' · directional contracts',tone(r?.net))+card('Report-on-report change',r?signed(r.change_report):'—',r?.previous_date?'Previous: '+r.previous_date:'No prior observation',tone(r?.change_report))+card('3Y net/OI percentile',r?rankCell(r.net_oi_pctile_3y):'—','Positioning versus own weekly history')+card('Open interest',r?n(r.open_interest):'—','Contracts · '+(r?.report_date||'—')+(isNumber(r?.change_oi)?' · '+signed(r.change_oi)+' vs prior report':''));
-$('commentary').innerHTML=commentary(r);
-$('overview-rows').innerHTML=rows.map(x=>'<tr><td>'+esc(x.market_label)+'</td><td>'+signed(x.net)+'</td><td class="'+tone(x.change_report)+'">'+signed(x.change_report)+'</td><td class="'+tone(x.change_28d)+'">'+signed(x.change_28d)+'</td><td>'+pct(x.net_oi_pct)+'</td><td>'+rankCell(x.net_oi_pctile_1y)+'</td><td>'+rankCell(x.net_oi_pctile_3y)+'</td><td>'+n(x.open_interest)+'</td><td>'+esc(x.report_date)+'</td></tr>').join('')||'<tr><td colspan="9">No matching observations</td></tr>';
-const lines=DATA.markets.filter(m=>m.enabled).map((m,i)=>{const v=windowRows(allRows(m.key,s.basis,s.cohort),s.years,s.asof);return{x:v.map(x=>x.report_date),y:v.map(x=>x.net_oi_pct),name:m.key,type:'scatter',mode:'lines',line:{width:2,color:['#40c8a4','#78aef5','#efc07d'][i%3]}}}).filter(x=>x.x.length);
-draw('overview-chart',lines,{yaxis:{ticksuffix:'%',title:'Net / OI (%)'}});
+$('overview-rows').innerHTML=rows.map(x=>'<tr><td>'+esc(x.market_label)+'</td><td>'+signed(x.net)+'</td><td class="'+tone(x.change_report)+'">'+signed(x.change_report)+'</td><td class="'+tone(x.change_28d)+'">'+signed(x.change_28d)+'</td><td>'+pct(x.net_oi_pct)+'</td><td>'+rankCell(x.net_oi_pctile_1y)+'</td><td>'+rankCell(x.net_oi_pctile_3y)+'</td><td>'+n(x.open_interest)+'</td><td>'+esc(x.report_date)+'</td></tr>').join('')||'<tr><td colspan="9">No comparable observations available</td></tr>';
+const lines=DATA.markets.filter(m=>m.enabled).map((m,i)=>{const v=windowRows(allRows(m.key,s.basis,s.cohort),s.years,s.asof);return {x:v.map(z=>z.report_date),y:v.map(z=>z.net_oi_pct),name:m.label,type:'scatter',mode:'lines',line:{width:2,color:['#40c8a4','#78aef5','#efc07d','#b29bfc','#d07dd9'][i%5]}}}).filter(x=>x.x.length);
+draw('overview-chart',lines,{yaxis:{ticksuffix:'%',title:'Net position / OI (%)'}});
 }
-function renderDeep(s,r,rows){$('deep-kpis').innerHTML=card('Long contracts',r?n(r.long):'—','Directional futures equivalent')+card('Short contracts',r?n(r.short):'—','Directional futures equivalent')+card('Long / short ratio',r&&r.long_short_ratio!==null?r.long_short_ratio.toFixed(2)+'×':'—','Long divided by short')+card('Spreading contracts',r?n(r.spreading):'—','Reported spreading exposure')+card('7-day net change',r?signed(r.change_7d):'—','Calendar-matched comparison',tone(r?.change_7d))+card('4-week net change',r?signed(r.change_28d):'—','Calendar-matched comparison',tone(r?.change_28d));
-const x=rows.map(z=>z.report_date);draw('positions-chart',[
+function renderDeep(s,r,rows){
+$('analysis-title').textContent='Positioning snapshot · '+(r?r.market_label:s.market);
+$('kpis').innerHTML=card('01 · Net position',r?signed(r.net):'—','Long − short · directional contracts',tone(r?.net))+
+ card('02 · Open interest',r?n(r.open_interest):'—',r&&isNumber(r.change_oi)?signed(r.change_oi)+' vs previous observation':'Outstanding market-wide contracts')+
+ card('03 · Net / open interest',r?pct(r.net_oi_pct):'—','Net as % of total open interest')+
+ card('04 · 3Y net/OI rank',r?rankCell(r.net_oi_pctile_3y):'—','Historical weekly-equivalent percentile');
+$('commentary').innerHTML=commentary(r);
+const x=rows.map(z=>z.report_date);
+draw('positions-chart',[
 {x,y:rows.map(z=>z.long),name:'Long',mode:'lines',type:'scatter',line:{color:'#40c8a4',width:2}},
 {x,y:rows.map(z=>z.short),name:'Short',mode:'lines',type:'scatter',line:{color:'#fa8d84',width:2}},
 {x,y:rows.map(z=>z.net),name:'Net',mode:'lines',type:'scatter',line:{color:'#78aef5',width:2.5}}
-],{yaxis:{title:'Directional contracts'}});
-$('oi-context').textContent='Total open interest · '+(isNumber(r?.change_oi)?signed(r.change_oi)+' since prior observation ('+(100*r.change_oi/r.open_interest).toFixed(2)+'% of current OI)':'previous change unavailable');
-draw('oi-chart',[{x,y:rows.map(z=>z.open_interest),type:'scatter',mode:'lines',line:{color:'#78aef5',width:2},name:'Open interest'}],{showlegend:false,yaxis:{title:'Contracts'}});
+],{yaxis:{title:'Contracts'}});
 const longDelta=r?.change_long??null,shortDelta=r?.change_short??null;
-draw('attribution-chart',[{x:[longDelta,shortDelta===null?null:-shortDelta],y:['Long-side contribution','Short-side contribution'],orientation:'h',type:'bar',marker:{color:[longDelta>=0?'#40c8a4':'#fa8d84',-shortDelta>=0?'#40c8a4':'#fa8d84']}}],{showlegend:false,margin:{l:145,r:25,t:25,b:40},xaxis:{title:'Contribution to net change'}});
-$('attribution-note').textContent=r&&longDelta!==null?`Net change: ${signed(r.change_report)} = ${signed(longDelta)} − (${signed(shortDelta)}) contracts. Note: ${r.previous_date} → ${r.report_date}.`:'Previous report required for attribution.';
-const flowCutoff=new Date((r?.report_date||s.asof)+'T00:00:00Z');flowCutoff.setUTCFullYear(flowCutoff.getUTCFullYear()-1);const changes=rows.filter(z=>z.report_date>=flowCutoff.toISOString().slice(0,10)&&isNumber(z.change_long)&&isNumber(z.change_short));
+draw('attribution-chart',[{x:[longDelta,shortDelta===null?null:-shortDelta],y:['Long-side contribution','Short-side contribution'],orientation:'h',type:'bar',marker:{color:[longDelta>=0?'#40c8a4':'#fa8d84',shortDelta!==null&&-shortDelta>=0?'#40c8a4':'#fa8d84']}}],{showlegend:false,margin:{l:155,r:25,t:25,b:40},xaxis:{title:'Contribution to net change'}});
+$('attribution-note').textContent=r&&longDelta!==null?'Net change '+signed(r.change_report)+' = Δ longs '+signed(longDelta)+' − Δ shorts ('+signed(shortDelta)+') · '+(r.previous_date||'—')+' → '+r.report_date:'Previous observation required for attribution.';
+const limit=new Date((r?.report_date||s.asof)+'T00:00:00Z');limit.setUTCFullYear(limit.getUTCFullYear()-1);const changes=rows.filter(z=>z.report_date>=limit.toISOString().slice(0,10)&&isNumber(z.change_long)&&isNumber(z.change_short));
 draw('flows-chart',[
-{x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_long),type:'bar',name:'Long contribution (Δ longs)',marker:{color:'#40c8a4'}},
-{x:changes.map(z=>z.report_date),y:changes.map(z=>-z.change_short),type:'bar',name:'Short contribution (−Δ shorts)',marker:{color:'#fa8d84'}},
-{x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_report),type:'scatter',mode:'lines',name:'Net change',line:{color:'#efc07d',width:2}}],{barmode:'relative',yaxis:{title:'Contracts per report'}});
+{x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_long),type:'bar',name:'Δ longs',marker:{color:'#40c8a4'}},
+{x:changes.map(z=>z.report_date),y:changes.map(z=>-z.change_short),type:'bar',name:'−Δ shorts',marker:{color:'#fa8d84'}},
+{x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_report),type:'scatter',mode:'lines',name:'Net change',line:{color:'#efc07d',width:2}}
+],{barmode:'relative',yaxis:{title:'Contracts per observation'}});
+$('oi-context').textContent='Total outstanding contracts · '+(r&&isNumber(r.change_oi)?signed(r.change_oi)+' vs prior observation ('+(100*r.change_oi/r.open_interest).toFixed(2)+'% of current OI)':'change unavailable');
+draw('oi-chart',[{x,y:rows.map(z=>z.open_interest),type:'scatter',mode:'lines',line:{color:'#78aef5',width:2},name:'Open interest'}],{showlegend:false,yaxis:{title:'Contracts'}});
 const other=DATA.records.filter(z=>z.market===s.market&&z.basis===s.basis&&z.report_date<=s.asof);
-const cohortNames=['Managed Money','Producer/Merchant','Swap Dealers','Other Reportables'];
-$('cohort-rows').innerHTML=cohortNames.map(g=>{const rr=other.filter(z=>z.cohort===g).sort((a,b)=>a.report_date.localeCompare(b.report_date));const v=rr[rr.length-1];return v?'<tr><td>'+esc(g)+'</td><td>'+signed(v.net)+'</td><td class="'+tone(v.change_report)+'">'+signed(v.change_report)+'</td><td class="'+tone(v.change_28d)+'">'+signed(v.change_28d)+'</td><td>'+pct(v.net_oi_pct)+'</td><td>'+rankCell(v.net_oi_pctile_3y)+'</td></tr>':''}).join('')||'<tr><td colspan="6">No comparable category data</td></tr>';
-
+const names=['Managed Money','Producer/Merchant','Swap Dealers','Other Reportables'];
+$('cohort-rows').innerHTML=names.map(g=>{const rr=other.filter(z=>z.cohort===g).sort((a,b)=>a.report_date.localeCompare(b.report_date)),v=rr[rr.length-1];return v?'<tr><td>'+esc(g)+'</td><td>'+signed(v.net)+'</td><td class="'+tone(v.change_report)+'">'+signed(v.change_report)+'</td><td>'+pct(v.net_oi_pct)+'</td><td>'+rankCell(v.net_oi_pctile_3y)+'</td></tr>':''}).join('')||'<tr><td colspan="5">No participant data</td></tr>';
 }
 function renderHistory(s,rows){$('history-rows').innerHTML=rows.slice(-75).reverse().map(r=>`<tr><td>${esc(r.report_date)}</td><td>${n(r.long)}</td><td>${n(r.short)}</td><td>${n(r.spreading)}</td><td class="${tone(r.net)}">${signed(r.net)}</td><td>${pct(r.net_oi_pct)}</td><td>${pct(r.net_oi_pctile_1y)}</td><td>${pct(r.net_oi_pctile_3y)}</td><td>${signed(r.change_report)}</td></tr>`).join('');}
 function render(){const s=state();const r=latest(s);const rows=windowRows(allRows(s.market,s.basis,s.cohort),s.years,s.asof);$('asof-caption').textContent=s.asof===DATA.last_observation?'Latest available COT observation; figures describe reported holdings, not real-time activity.':'Historical snapshot as of '+s.asof+'. Percentiles and comparisons reflect information in the observation history through that date.';renderOverview(s,r);renderDeep(s,r,rows);renderHistory(s,rows);}
