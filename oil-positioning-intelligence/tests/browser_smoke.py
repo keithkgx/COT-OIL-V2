@@ -7,7 +7,12 @@ import csv
 from datetime import date
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from playwright.sync_api import expect, sync_playwright
+
+from oilcot.build import build_private_dashboard
+from oilcot.store import canonical, read_history
+from test_ice_import import ice_report, write_ice
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "dashboard" / "index.html"
@@ -77,6 +82,47 @@ def check_misaligned_comparison(page):
     expect(page.locator("#cross-highlights .metric").nth(1)).to_have_text("Unavailable")
     assert page.locator("#market-change-chart").evaluate("(el) => el.data.map(t => t.name)") == ["Four weeks"]
     assert set(page.locator("#positioning-map").evaluate("(el) => el.data[0].text")) == {"ULSD", "RBOB"}
+    page.get_by_role("button", name="Use latest shared date").click()
+    expect(page.locator("#cross-asof-note")).to_contain_text("3 of 3 markets")
+
+
+def check_private_ice_view(browser):
+    history = read_history(ROOT / "data" / "cot_history.csv")
+    dates = sorted({r["report_date"] for r in history if r["market"] == "WTI" and r["basis"] == "combined"})
+    current, previous = dates[-1], dates[-2]
+    with TemporaryDirectory() as work:
+        folder = Path(work)
+        cftc = folder / "cftc.csv"
+        cftc.write_text(canonical([r for r in history if r["report_date"] >= dates[-6]]), encoding="utf-8")
+        rows = [r for day in dates[-6:-1] for r in ice_report("B", day)]
+        rows += [r for day in dates[-6:-2] for r in ice_report("G", day)]
+        ice = write_ice(folder / "ice.csv", rows)
+        report = folder / "private.html"
+        build_private_dashboard([ice], report, history_path=cftc)
+        page = browser.new_page(viewport={"width": 1400, "height": 900})
+        errors = []
+        page.on("pageerror", lambda err: errors.append(str(err)))
+        page.goto(report.as_uri(), wait_until="load")
+        expect(page.locator("#status-text")).to_have_text(f"CFTC position date {current} · ICE position date {previous}")
+        expect(page.locator("#market option")).to_have_count(5)
+        page.locator("#market").select_option("BRENT")
+        expect(page.locator("#analysis-title")).to_contain_text("ICE Brent Crude")
+        expect(page.locator("#asof-caption")).to_contain_text(f"BRENT latest available position date {previous}")
+        page.get_by_role("button", name="Compare markets").click()
+        page.locator("#pair").select_option("crude")
+        expect(page.locator("#overview-rows tr")).to_have_count(2)
+        expect(page.locator("#cross-asof-note")).to_contain_text("1 of 2 markets")
+        page.get_by_role("button", name="Use latest shared date").click()
+        expect(page.locator("#asof")).to_have_value(previous)
+        expect(page.locator("#cross-asof-note")).to_contain_text("2 of 2 markets")
+        assert set(page.locator("#overview-chart").evaluate("(el) => el.data.map(t => t.name)")) == {"WTI", "BRENT"}
+        page.locator("#pair").select_option("distillate")
+        expect(page.locator("#cross-asof-note")).to_contain_text("1 of 2 markets")
+        expect(page.locator("#overview-rows tr").filter(has_text="ICE Low Sulphur Gasoil")).to_contain_text("Earlier")
+        page.locator("#basis").select_option("futures")
+        expect(page.locator("#cross-asof-note")).to_contain_text("No Futures Only observations for GASOIL")
+        assert not errors, errors[:10]
+        page.close()
 
 
 def main():
@@ -119,6 +165,10 @@ def main():
         expect(page.locator("#positioning-map .xtitle")).to_have_text("Three-year net/OI percentile")
         expect(page.locator("#positioning-map .ytitle")).to_have_text("Four-week change (pp)")
         expect(page.locator("#market-filter")).to_be_hidden()
+        expect(page.locator("#pair-filter")).to_be_hidden()
+        page.locator("#compare-metric").select_option("net_oi_pctile_3y")
+        expect(page.locator("#overview-chart .ytitle")).to_have_text("Three-year percentile")
+        page.locator("#compare-metric").select_option("net_oi_pct")
         assert page.locator("#cross-highlights .cross-tile").count() == 3
         assert page.locator("#overview-rows tr").count() >= 3
         page.screenshot(path=str(OUT / "compare-markets.png"), full_page=True)
@@ -131,8 +181,9 @@ def main():
         page.locator("#positions-chart .svg-container").wait_for()
         assert page.locator("body").evaluate("(el) => el.scrollWidth") <= 390
         assert not errors, errors[:10]
+        check_private_ice_view(browser)
         browser.close()
-    print("PASS: attribution, historical chart views, comparison dates, filtered CSV and responsive widths")
+    print("PASS: attribution, chart views, date alignment, filtered CSV, responsive widths and private ICE coverage")
 
 
 if __name__ == "__main__":

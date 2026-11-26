@@ -44,6 +44,8 @@
 .history-control{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .history-control select{min-width:0}
 .filter[hidden]{display:none}
+.comparison-controls{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin:0 0 12px}
+.comparison-controls .action{font-size:12px}
 .row-date{display:flex;justify-content:flex-end;align-items:center;gap:6px}
 .history-empty{text-align:left!important;color:var(--muted)}
 .selected-cohort td:first-child{color:var(--blue);font-weight:700}
@@ -72,7 +74,7 @@ button.action:disabled{opacity:.5;cursor:default}
 <body>
 <div class="layout">
   <header class="head">
-    <div><div class="mark">Commodity Analytics / COT</div><h1 class="title">Oil Positioning Intelligence</h1><div class="subtitle">Public CFTC disaggregated positioning · WTI, ULSD and RBOB</div></div>
+    <div><div class="mark">Commodity Analytics / COT</div><h1 class="title">Oil Positioning Intelligence</h1><div class="subtitle" id="source-summary">CFTC Disaggregated Commitments of Traders</div></div>
     <div class="status"><span class="status-dot" id="status-dot"></span><span id="status-text">Awaiting verified source data</span></div>
   </header>
   <nav class="tabs" aria-label="Dashboard pages"><button class="active" data-tab="deep">Market analysis</button><button data-tab="overview">Compare markets</button><button data-tab="history">Data & methodology</button></nav>
@@ -115,10 +117,19 @@ button.action:disabled{opacity:.5;cursor:default}
 
     <section id="overview" class="page hidden">
       <div class="stage-heading"><span class="stage-number">A</span><div><h2>Cross-market positioning monitor</h2><p>Where is the selected trader category most historically stretched, and where is it changing fastest? Compare levels and changes, not raw contract counts.</p></div></div>
+      <div class="comparison-controls">
+        <label class="filter" id="pair-filter" hidden>MARKETS<select id="pair"></select></label>
+        <button class="action hidden" id="common-date" type="button">Use latest shared date</button>
+      </div>
       <div class="cross-highlights" id="cross-highlights"></div>
       <p class="note" id="cross-asof-note"></p>
       <div class="cross-charts">
-       <div class="panel"><h3>Net positioning relative to market size</h3><p class="note">Net positions as % of each contract's total open interest. Compare historical trends, not absolute contracts.</p><div class="chart" id="overview-chart"></div></div>
+       <div class="panel">
+         <div class="history-control"><h3>Positioning history</h3>
+           <label class="filter">VIEW<select id="compare-metric"><option value="net_oi_pct">Net / open interest</option><option value="net_oi_pctile_3y">Three-year net/OI rank</option></select></label>
+         </div>
+         <p class="note" id="comparison-history-note"></p><div class="chart" id="overview-chart"></div>
+       </div>
        <div class="panel"><h3>How rapidly are positions changing?</h3><p class="note">Changes in net/OI, measured in <strong>percentage points</strong>. Latest report and four-week comparison.</p><div class="chart" id="market-change-chart"></div></div>
       </div>
       <div class="panel market-map"><h3>Historical positioning rank vs. four-week change</h3>
@@ -127,17 +138,17 @@ button.action:disabled{opacity:.5;cursor:default}
       </div>
       <div class="panel comparison-table"><h3>Cross-market positioning table</h3><p class="note">Hover over a percentage-point change for its actual calculation dates. Earlier observations are marked in the position-date column.</p><div class="table-wrap"><table class="table"><thead><tr><th>Market</th><th>Net contracts</th><th>Report change</th><th>4W change</th><th>Net/OI</th><th>Latest Δ (pp)</th><th>4W Δ (pp)</th><th>1Y rank</th><th>3Y rank</th><th>OI contracts</th><th>Position date</th></tr></thead><tbody id="overview-rows"></tbody></table></div>
       <div class="ice-source-links">
-       <div><strong>ICE Brent Crude (B)</strong><span>International crude benchmark · ICE Futures Europe</span><a href="https://www.ice.com/cot-report-links" target="_blank" rel="noopener noreferrer">Official ICE COT reports</a></div>
-       <div><strong>ICE Low Sulphur Gasoil (G)</strong><span>European diesel / middle-distillate benchmark · ICE Futures Europe</span><a href="https://www.ice.com/cot-report-links" target="_blank" rel="noopener noreferrer">Official ICE COT reports</a></div>
+       <div><strong>ICE Brent Crude (B)</strong><span id="brent-coverage">Available in a local dashboard with an authorized export</span><a href="https://www.ice.com/cot-report-links" target="_blank" rel="noopener noreferrer">Official ICE COT reports</a></div>
+       <div><strong>ICE Low Sulphur Gasoil (G)</strong><span id="gasoil-coverage">Available in a local dashboard with an authorized export</span><a href="https://www.ice.com/cot-report-links" target="_blank" rel="noopener noreferrer">Official ICE COT reports</a></div>
       </div>
-      <p class="small">These two benchmarks are planned additions. Their official data are available for reference, but the public dashboard will not ingest or redistribute ICE data before usage permission is verified.</p></div>
+      <p class="small" id="ice-coverage-note"></p></div>
     </section>
     <section id="history" class="page hidden">
       <div class="panel"><h3>Historical observations</h3><p class="note" id="history-count"></p><div class="buttons"><button class="action" id="download-selected">Download filtered CSV</button><button class="action" id="download-html">Save HTML copy</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Report date</th><th>Long</th><th>Short</th><th>Spreading</th><th>Net</th><th>Net/OI</th><th>1Y rank</th><th>3Y rank</th><th>Change vs previous</th></tr></thead><tbody id="history-rows"></tbody></table></div></div>
       <div class="grid"><div class="panel full"><h3>Calculation methodology</h3><p class="note">Audit definitions used consistently for every market and trader cohort</p><div class="method"><div><strong>Net positioning</strong><p>Long contracts minus short contracts. Spreading shown separately.</p></div><div><strong>Net / open interest</strong><p>100 × net contracts ÷ total open interest.</p></div><div><strong>Report change</strong><p>Latest net minus immediately previous net. Not necessarily seven calendar days.</p></div><div><strong>1Y / 3Y percentile</strong><p>Causal empirical midrank against up to 1/3 years of weekly-equivalent historical readings.</p></div><div><strong>Gross directional</strong><p>Long + short (does not include separately reported spreading).</p></div><div><strong>Long/short ratio</strong><p>Long ÷ short; undefined for a zero short position.</p></div></div><div class="information">Combined reports reflect delta-adjusted futures plus options, not futures alone. COT observations are retrospective and not predictive trading signals. Publication date is not available in the CFTC row-level historical dataset; displayed dates are position dates, not timestamps of public availability.</div></div></div>
     </section>
   </main>
-  <div class="footer">Independent public-data research · <a href="https://publicreporting.cftc.gov/stories/s/r4w3-av2u">CFTC source</a> · <a href="https://github.com/keithkgx/COT-OIL-V2">Source code & documentation</a> · Position dates are historical, not real-time · Not affiliated with CFTC or any exchange · Not investment advice.</div>
+  <div class="footer">Independent research · <a href="https://publicreporting.cftc.gov/stories/s/r4w3-av2u">CFTC source</a> · <a href="https://github.com/keithkgx/COT-OIL-V2">Source code & documentation</a> · Position dates are historical, not real-time · Not affiliated with CFTC or any exchange · Not investment advice.</div>
 </div>
 <script>
 const DATA=__EMBEDDED_DATA__;
@@ -213,6 +224,28 @@ function marketOptions(){
  if(DATA.markets.some(m=>m.key==='WTI'&&m.enabled))market.value='WTI';
 }
 const marketColors=['#40c8a4','#78aef5','#efc07d','#b29bfc','#d07dd9'];
+const marketPairs={
+ crude:{label:'Crude · WTI / Brent',keys:['WTI','BRENT']},
+ distillate:{label:'Distillates · ULSD / Gasoil',keys:['ULSD','GASOIL']}
+};
+
+function comparisonOptions(){
+ const enabled=new Set(DATA.markets.filter(m=>m.enabled).map(m=>m.key));
+ const pairs=Object.entries(marketPairs).filter(([,pair])=>pair.keys.every(key=>enabled.has(key)));
+ $('pair').replaceChildren(new Option('All markets','all'),...pairs.map(([key,pair])=>new Option(pair.label,key)));
+ $('pair-filter').hidden=pairs.length===0;
+}
+
+function updateCommonDate(series,asof){
+ const dateSets=series.slice(1).map(v=>new Set(v.rows.map(r=>r.report_date)));
+ const shared=series[0]?.rows.findLast(r=>r.report_date<=asof&&dateSets.every(dates=>dates.has(r.report_date)))?.report_date;
+ const button=$('common-date');
+ button.classList.toggle('hidden',!shared||shared===asof);
+ if(shared&&shared!==asof){
+  button.textContent='Use latest shared date · '+shared;
+  button.onclick=()=>{$('asof').value=shared;render()};
+ }
+}
 
 function comparableChanges(rows,metric,reference){
  const available=rows.filter(r=>isNumber(r[metric])&&r[reference]);
@@ -225,10 +258,13 @@ function largest(rows,metric,center=0){
 }
 
 function renderOverview(s){
- const markets=DATA.markets.filter(m=>m.enabled);
- const series=markets.map((m,i)=>({
-   market:m.key,color:marketColors[i%marketColors.length],rows:allRows(m.key,s.basis,s.cohort)
+ const enabled=DATA.markets.filter(m=>m.enabled);
+ const pair=marketPairs[$('pair').value];
+ const markets=enabled.filter(m=>!pair||pair.keys.includes(m.key));
+ const series=markets.map(m=>({
+   market:m.key,color:marketColors[enabled.indexOf(m)%marketColors.length],rows:allRows(m.key,s.basis,s.cohort)
  }));
+ updateCommonDate(series,s.asof);
  const rows=series.map(v=>v.rows.findLast(r=>r.report_date<=s.asof)).filter(Boolean);
  const aligned=rows.filter(r=>r.report_date===s.asof);
  const ranked=aligned.filter(r=>isNumber(r.net_oi_pctile_3y));
@@ -242,19 +278,28 @@ function renderOverview(s){
   tile('Most extreme historical rank',widest?esc(widest.market)+' · '+ordinal(widest.net_oi_pctile_3y):'Unavailable',widest?pct(widest.net_oi_pct)+' net/OI · '+ranked.length+' markets with 3Y ranks':'Fewer than two markets with a rank on the selected date')+
   tile('Largest change since last report',strongest?esc(strongest.market)+' · '+signedDecimal(strongest.change_net_oi_pp,2)+' pp':'Unavailable',strongest?'From '+strongest.previous_date+' · '+weekly.length+' comparable markets':'Needs at least two markets and a common previous report date')+
   tile('Largest change over four weeks',month?esc(month.market)+' · '+signedDecimal(month.change_28d_net_oi_pp,2)+' pp':'Unavailable',month?'From '+month.reference_28d_date+' · '+monthly.length+' comparable markets':'Needs at least two markets and a common four-week reference date');
- $('cross-asof-note').textContent=aligned.length+' of '+markets.length+' markets have observations on '+s.asof+'. Earlier readings appear in the history and table. Change comparisons require matching start and end dates.';
+ const missing=series.filter(v=>!v.rows.length).map(v=>v.market);
+ $('cross-asof-note').textContent=aligned.length+' of '+markets.length+' markets have observations on '+s.asof+
+  '. Earlier readings appear in the history and table. Change comparisons require matching start and end dates.'+
+  (missing.length?' No '+$('basis').selectedOptions[0].textContent+' observations for '+missing.join(', ')+'.':'');
  const changeCell=(r,metric,reference)=>'<td class="'+tone(r[metric])+'" title="'+(r[reference]&&isNumber(r[metric])?r[reference]+' to '+r.report_date:'No comparable reference date')+'">'+signedDecimal(r[metric],2)+'</td>';
  $('overview-rows').innerHTML=rows.map(r=>
   '<tr><td>'+esc(r.market_label)+'</td><td>'+signed(r.net)+'</td><td class="'+tone(r.change_report)+'">'+signed(r.change_report)+'</td><td class="'+tone(r.change_28d)+'">'+signed(r.change_28d)+'</td><td>'+pct(r.net_oi_pct)+'</td>'+
   changeCell(r,'change_net_oi_pp','previous_date')+changeCell(r,'change_28d_net_oi_pp','reference_28d_date')+
   '<td>'+rankCell(r.net_oi_pctile_1y)+'</td><td>'+rankCell(r.net_oi_pctile_3y)+'</td><td>'+n(r.open_interest)+'</td><td><span class="row-date">'+r.report_date+(r.report_date<s.asof?' <span class="pill warn">Earlier</span>':'')+'</span></td></tr>'
  ).join('')||'<tr><td colspan="11">No comparable observations</td></tr>';
+ const metric=$('compare-metric').value,rank=metric==='net_oi_pctile_3y';
+ $('comparison-history-note').textContent=rank?'Each market’s rank is relative to its own trailing three-year net/OI history.':
+  'Net contracts as a share of each market’s total open interest.';
  const lines=series.map(v=>{
   const history=windowRows(v.rows,s.years,s.asof);
-  return {x:history.map(r=>r.report_date),y:history.map(r=>r.net_oi_pct),name:v.market,type:'scatter',mode:'lines',
-   line:{width:2.3,color:v.color},hovertemplate:'%{x}<br>%{y:.2f}% of OI<extra>%{fullData.name}</extra>'};
- }).filter(v=>v.x.length);
- draw('overview-chart',lines,{yaxis:{ticksuffix:'%',title:{text:'Net/OI'}},hovermode:'x unified'});
+  return {x:history.map(r=>r.report_date),y:history.map(r=>r[metric]),name:v.market,type:'scatter',mode:'lines',
+   line:{width:2.3,color:v.color},hovertemplate:'%{x}<br>'+(rank?'Percentile %{y:.1f}':'%{y:.2f}% of OI')+'<extra>%{fullData.name}</extra>'};
+ }).filter(v=>v.y.some(isNumber));
+ draw('overview-chart',lines,{
+  yaxis:rank?{range:[0,100],tickvals:[0,25,50,75,100],title:{text:'Three-year percentile'}}:{ticksuffix:'%',title:{text:'Net/OI'}},
+  hovermode:'x unified',annotations:lines.length?[]:[chartMessage('No observations for this chart view')]
+ });
 
  const changeTrace=(values,metric,name,color)=>({
   x:values.map(r=>r[metric]),y:values.map(r=>r.market),type:'bar',orientation:'h',name,marker:{color},
@@ -321,7 +366,8 @@ function renderPositionHistory(rows){
  });
 }
 function renderDeep(s,r,rows){
-$('analysis-title').textContent='Positioning snapshot · '+(r?r.market_label:s.market);
+const market=DATA.markets.find(m=>m.key===s.market);
+$('analysis-title').textContent='Positioning snapshot · '+(market?.label||s.market);
 $('kpis').innerHTML=card('01 · Net position',r?signed(r.net):'—','Long − short · directional contracts',tone(r?.net))+
  card('02 · Open interest',r?n(r.open_interest):'—',r&&isNumber(r.change_oi)?signed(r.change_oi)+' vs previous observation':'Outstanding market-wide contracts')+
  card('03 · Net / open interest',r?pct(r.net_oi_pct):'—','Net as % of total open interest')+
@@ -408,10 +454,27 @@ function csvDownload(){
  a.click();
  URL.revokeObjectURL(url);
 }
-function init(){marketOptions();const dates=[...new Set(DATA.records.map(r=>r.report_date))].sort().reverse();$('asof').replaceChildren(...dates.map(d=>new Option(d,d)));const good=DATA.records.length>0;$('content').classList.toggle('hidden',!good);$('no-data').classList.toggle('hidden',good);const latestDate=DATA.last_observation;
-const ageDays=latestDate?Math.max(0,Math.floor((Date.now()-Date.parse(latestDate+'T00:00:00Z'))/86400000)):null;
-$('status-text').textContent=good?'CFTC position date: '+latestDate+' · '+ageDays+'d old · not live prices':'No imported official observations';
-$('status-dot').style.background=good&&ageDays<=14?'var(--green)':'var(--gold)';for(const el of document.querySelectorAll('.tabs button'))el.onclick=()=>{for(const b of document.querySelectorAll('.tabs button'))b.classList.toggle('active',b===el);for(const page of document.querySelectorAll('.page'))page.classList.toggle('hidden',page.id!==el.dataset.tab);if(good)requestAnimationFrame(()=>{render();requestAnimationFrame(resizeVisibleCharts)})};for(const id of ['market','cohort','basis','window','asof','history-metric'])$(id).addEventListener('change',()=>{if(good)render()});$('download-selected').onclick=csvDownload;$('download-html').onclick=()=>{let a=document.createElement('a');let blob=new Blob([document.documentElement.outerHTML],{type:'text/html'});let url=URL.createObjectURL(blob);a.href=url;a.download='oil_cot_dashboard.html';a.click();URL.revokeObjectURL(url)};if(good){render();requestAnimationFrame(resizeVisibleCharts);window.addEventListener('load',()=>requestAnimationFrame(resizeVisibleCharts));
+function showSourceCoverage(){
+ const sources=Object.entries(DATA.source_dates);
+ $('source-summary').textContent=DATA.private?'Local dashboard · CFTC Disaggregated COT and ICE Futures Europe Financial COT':'CFTC Disaggregated COT · WTI, ULSD and RBOB';
+ $('status-text').textContent=sources.length?sources.map(([source,day])=>source+' position date '+day).join(' · '):'No imported observations';
+ const allRecent=sources.length&&sources.every(([,day])=>Date.now()-Date.parse(day+'T00:00:00Z')<15*86400000);
+ $('status-dot').style.background=allRecent?'var(--green)':'var(--gold)';
+ for(const [market,id] of [['BRENT','brent-coverage'],['GASOIL','gasoil-coverage']]){
+  const latest=DATA.records.filter(r=>r.market===market).map(r=>r.report_date).sort().at(-1);
+  if(latest)$(id).textContent='Latest imported position date '+latest;
+ }
+ const note=$('ice-coverage-note');
+ note.textContent=DATA.private?'ICE data reflect the supplied files. CFTC and ICE use similar trader categories with different reporting thresholds.':'Build a local dashboard when you have an authorized ICE export. ';
+ if(!DATA.private){
+  const link=document.createElement('a');
+  link.href='https://github.com/keithkgx/COT-OIL-V2/blob/main/oil-positioning-intelligence/docs/ice-brent-gasoil-integration.md';
+  link.textContent='Local setup guide';
+  note.append(link);
+ }
+}
+function init(){marketOptions();comparisonOptions();showSourceCoverage();const dates=[...new Set(DATA.records.map(r=>r.report_date))].sort().reverse();$('asof').replaceChildren(...dates.map(d=>new Option(d,d)));const good=DATA.records.length>0;$('content').classList.toggle('hidden',!good);$('no-data').classList.toggle('hidden',good);
+for(const el of document.querySelectorAll('.tabs button'))el.onclick=()=>{for(const b of document.querySelectorAll('.tabs button'))b.classList.toggle('active',b===el);for(const page of document.querySelectorAll('.page'))page.classList.toggle('hidden',page.id!==el.dataset.tab);if(good)requestAnimationFrame(()=>{render();requestAnimationFrame(resizeVisibleCharts)})};for(const id of ['market','cohort','basis','window','asof','history-metric','pair','compare-metric'])$(id).addEventListener('change',()=>{if(good)render()});$('download-selected').onclick=csvDownload;$('download-html').onclick=()=>{let a=document.createElement('a');let blob=new Blob([document.documentElement.outerHTML],{type:'text/html'});let url=URL.createObjectURL(blob);a.href=url;a.download=DATA.private?'oil_cot_private.html':'oil_cot_dashboard.html';a.click();URL.revokeObjectURL(url)};if(good){render();requestAnimationFrame(resizeVisibleCharts);window.addEventListener('load',()=>requestAnimationFrame(resizeVisibleCharts));
  if(typeof ResizeObserver!=='undefined'){let pending=false;const observer=new ResizeObserver(()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;resizeVisibleCharts()})});for(const el of document.querySelectorAll('.panel'))observer.observe(el);}
 }}
 init();

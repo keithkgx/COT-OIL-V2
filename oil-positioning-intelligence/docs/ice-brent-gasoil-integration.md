@@ -1,62 +1,62 @@
-# ICE Brent and Low Sulphur Gasoil COT — integration specification
+# Add ICE Brent and Low Sulphur Gasoil
 
-Status on 26 November 2026: **chosen as the next oil benchmarks, but not enabled for automated public redistribution**. The public dashboard links to ICE's official reporting index and contains **no fabricated ICE figures**.
+Use the **ICE Futures Europe Financial Commitments of Traders** export for these two markets.
 
-## Exact target instruments
-
-| Market | ICE Futures Europe COT code | Contract size | Economic role |
+| Contract | COT code | Contract size | Comparison |
 | --- | --- | --- | --- |
-| Brent crude futures and options | `B` | 1,000 barrels per contract | Global seaborne crude benchmark |
-| Low Sulphur Gasoil futures and options | `G` | 100 metric tonnes per contract | European diesel / middle-distillate benchmark |
+| ICE Brent Crude | `B` | 1,000 barrels | NYMEX WTI |
+| ICE Low Sulphur Gasoil | `G` | 100 metric tonnes | NYMEX ULSD |
 
-These are **ICE Futures Europe Financial COT** series, not NYMEX Brent Last Day, ICE Singapore mini contracts, ICE WTI, or crack-spread legs.
+The financial report includes positions by category and separates Futures Only from Futures and Options Combined. Keep the two bases separate in the export. ICE and CFTC use similar categories, with differences in reporting thresholds and exchange coverage.
 
-Sources:
-- [ICE Futures Europe COT explanatory notes](https://www.ice.com/publicdocs/futures/CoT_Notes.pdf) (codes, trader categories and futures-equivalent treatment)
-- [ICE COT reports and historical CSV files](https://www.ice.com/cot-report-links)
-- [ICE Commitment of Traders data product](https://developer.ice.com/fixed-income-data-services/catalog/ice-commitment-traders)
-- [ICE website Terms of Use](https://www.ice.com/privacy-security-center/terms-of-use)
+[ICE Financial COT explanatory notes](https://www.ice.com/publicdocs/futures/CoT_Notes.pdf) · [ICE COT reports](https://www.ice.com/cot-report-links) · [ICE Data Services COT product](https://developer.ice.com/fixed-income-data-services/catalog/ice-commitment-traders)
 
-ICE's explanatory notes describe a combined CSV with separate records for **Futures Only** and **Futures and Options Combined**, and category definitions designed to be similar to the US CFTC Disaggregated report. The differences in exchange venue, reportability thresholds and classification practices still matter.
+## Build a local dashboard
 
-## Publication rights are a technical deployment gate
+1. Obtain an ICE export your data agreement allows you to use for local analytics. Ask your ICE account or market-data administrator for historical and recent observations for `B` and `G`, covering the intended report bases. For three-year ranks with a full lookback, obtain at least three years of observations plus any earlier history needed for the analysis window.
+2. Map the export to the CSV layout below. Save the CSV outside the Git checkout. You can supply more than one file by repeating `--ice-data`.
+3. Use the Python environment from the [developer guide](../README.md). From the `oil-positioning-intelligence` folder, run the command for your operating system.
 
-The ICE website Terms of Use restrict automated gathering, compilation and redistribution without appropriate authorization. A publicly downloadable report is **not equivalent to a license to systematically reproduce its historical observations on GitHub Pages**.
+**Windows PowerShell**
 
-**Do not** copy bulk ICE records into the public GitHub CSV or HTML until permission explicitly covers this use. Authorization should address:
-1. Automated download/API or bulk-file access to historical + incremental COT files.
-2. Storage of a historical local database and derived metrics.
-3. Display of trader-category net positions, open interest, percentiles and historical charts on a **public**, freely shareable dashboard.
-4. Public distribution of historical source CSV versus derived metrics (the right may differ).
-5. Required attribution, redistribution restrictions, expiry, logging, and any commercial-use limits.
+```powershell
+$env:PYTHONPATH = "src"
+python -m oilcot.cli build-private --ice-data "C:\OilCOT\ice-cot.csv" --output "C:\OilCOT\oil-cot-private.html"
+Invoke-Item "C:\OilCOT\oil-cot-private.html"
+```
 
-If Pertamina already licenses ICE data for internal analytical use, **that does not necessarily permit republishing it publicly**. An internal-only approved export is a distinct architecture and must not silently feed this public repository.
+**macOS / Linux**
 
-For permission questions, use ICE market regulation contact details in the [ICE explanatory notes](https://www.ice.com/publicdocs/futures/CoT_Notes.pdf), or ICE data services through the [ICE COT product page](https://developer.ice.com/fixed-income-data-services/catalog/ice-commitment-traders).
+```bash
+PYTHONPATH=src python -m oilcot.cli build-private --ice-data ~/OilCOT/ice-cot.csv --output ~/OilCOT/oil-cot-private.html
+```
 
-## Ready-to-implement ingestion design — after rights approval
+Open the resulting HTML in a browser. The **Market** dropdown lists each imported ICE contract alongside the CFTC markets. **Compare markets** adds the crude and distillate pairs when the corresponding ICE contract is available. The header shows the latest position date in each source, and the comparison can jump back to the latest position date shared by all markets in the selected view. Rankings of changes also require matching reference dates.
 
-The current architecture already has disabled market definitions for `BRENT` (`B`) and `GASOIL` (`G`). Enable them only after all gates below have passed.
+The local build reads the CFTC history already in the repository, unless you specify an alternative with `--data`. To update it, refresh the CFTC history, add new authorized ICE observations to your input, then rerun `build-private`. The generated HTML embeds the observations and runs offline.
 
-1. **Ingest** licensed ICE historical files and incremental files using the permitted transport. Keep raw source snapshots separately from normalized rows and record file checksum, source URL, retrieval time, and publication/position date when present.
-2. **Normalize** to the canonical fields: `source=ICE`, `market`, `contract_code`, `contract_units`, `report_date`, `basis`, `cohort`, `long`, `short`, `spreading` and `open_interest`. Never assume ICE CSV column names without checking an actual authorized file.
-3. **Validate** both Futures Only and Futures + Options Combined coverage, trader groups, non-negative OI/positions, unique keys, source-specific classification schema and product size.
-4. **Backfill** at least three years (ideally the full licensed archive). Compare latest two dates with ICE's own PDF reports for Brent and Gasoil, and verify key calculations against a hand calculation.
-5. **Integrate** into the common metrics engine but retain `source=ICE`. Calculate net = long − short, net/OI, changes, 1Y/3Y empirical rank. Do **not** add ICE and CFTC positions together into an "oil total".
-6. **Show freshness independently**: ICE reports positions as of Tuesday and historically publish Friday London time subject to holidays. Track source-specific position dates and mismatches when comparing markets.
-7. **Publish** only permitted values and derived metrics. If the license is internal-only, use a separate access-controlled dashboard; GitHub Pages is publicly accessible.
-8. **Test** revision handling, missing reports, both report bases, chart/source labels and rights verification flags. If a feed fails, retain the previous verified values and display a source-staleness warning.
+## CSV layout
 
-## Future trader-facing analysis
+Use UTF-8 CSV with these column names. The importer expects this normalized layout. ICE Connect, licensed API or bulk delivery, and annual exchange files may use a different export layout.
 
-Once permission and backfill are confirmed, place Brent and Gasoil alongside the NYMEX contracts in the *Compare markets* page. Distinguish:
-- **Crude:** NYMEX WTI versus ICE Brent (different regional benchmarks).
-- **Middle distillates:** NYMEX ULSD versus ICE Gasoil (different specifications and locations).
-- **Gasoline:** NYMEX RBOB (no implied substitute).
-- **Relative metrics:** net/OI, report-on-report and four-week changes in net/OI percentage points, 1Y/3Y historical rank. Raw lot counts and long/short totals should always remain contract-specific.
+```csv
+contract_code,report_date,basis,cohort,long,short,spreading,open_interest
+```
 
-The **default report basis remains Futures + Options Combined** in both venues, but each venue must still pass its own reconciliation.
+| Field | Accepted value |
+| --- | --- |
+| `contract_code` | `B` or `G` |
+| `report_date` | Position date in `YYYY-MM-DD` format |
+| `basis` | `combined` or `futures` |
+| `cohort` | `Producer/Merchant`, `Swap Dealers`, `Managed Money`, or `Other Reportables` |
+| `long`, `short` | Reported directional contract counts |
+| `spreading` | Reported spreading contracts, or blank where unavailable or inapplicable |
+| `open_interest` | Total market open interest for this contract, date and basis. Repeat the same value for all four categories. |
 
-## Current state
+Include one row per trader category for each available contract, position date and basis. In a wide export, one exchange report becomes four rows by placing each category's long, short and spreading columns into the common fields. The importer accepts identical overlaps between files and reports conflicting observations so you can select the correct revision. Reconcile two recent dates against ICE's reports before relying on a new mapping.
 
-**No live ICE ingestion is enabled or claimed.** This document is an approved-product selection and delivery specification, not a data license or a working public ICE integration.
+## Public display and automation
+
+The GitHub Pages build uses CFTC data. Before adding ICE series to the public site, obtain written confirmation that your agreement permits automated access, historical storage and public display of the specific fields and derived charts you plan to share. Ask separately about downloadable history, since those rights can differ from chart display. ICE offers API and bulk delivery under its data services. Its official COT notes also provide the Market Regulation contact for report questions.
+
+After the approved delivery and usage are confirmed, map the licensed feed, reconcile it with source reports, and then enable the approved outputs in the public build. For current report access and terms, see [ICE COT Data Services](https://developer.ice.com/fixed-income-data-services/catalog/ice-commitment-traders), [report notes](https://www.ice.com/publicdocs/futures/CoT_Notes.pdf), and [ICE website terms](https://www.ice.com/privacy-security-center/terms-of-use).

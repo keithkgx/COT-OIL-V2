@@ -14,7 +14,7 @@ The site is organized around the questions a market analyst would ask:
 2. **How did they get there?** Switch the history chart between long, short and net contracts, net/OI, and the rolling three-year net/OI percentile.
 3. **What's driving the change?** Break down the latest move in contracts by long and short holdings, then see how holdings and open interest each contributed to the net/OI change.
 4. **How does participation look?** Total open interest and positions by CFTC trader group.
-5. **How do related markets compare?** **Compare markets** plots historical rank against four-week net/OI change and compares shifts over matching date intervals.
+5. **How do related markets compare?** **Compare markets** plots historical rank against four-week net/OI change and offers history views for net/OI and three-year rank. The comparison can jump to the most recent position date the selected markets share.
 
 Select an **as-of position date**, instrument, participant category, report basis, and historical window. The CSV on **Data & methodology** includes every observation that matches these filters.
 
@@ -28,7 +28,7 @@ Select an **as-of position date**, instrument, participant category, report basi
 
 **Default:** Managed Money; **Futures and Options Combined** (delta-adjusted options included). Futures Only is available as an alternative, but the two report bases overlap and should **not** be added together.
 
-**Not currently included:** main ICE Brent or ICE Low Sulphur Gasoil benchmarks. Direct ICE automation and redistribution require authorized data access. Other CFTC-reported fuel-oil-linked contracts are being assessed separately; spreads should not be presented as outright crude or fuel oil directional bets. See the [research note](oil-positioning-intelligence/docs/market-coverage.md).
+**Local ICE coverage:** Build a local dashboard with ICE Brent (`B`) and ICE Low Sulphur Gasoil (`G`) using an authorized export. The local version adds WTI/Brent and ULSD/Gasoil comparison views. GitHub Pages publishes the CFTC series. See the [local ICE setup and data-access guide](oil-positioning-intelligence/docs/ice-brent-gasoil-integration.md).
 
 ## How data updates
 
