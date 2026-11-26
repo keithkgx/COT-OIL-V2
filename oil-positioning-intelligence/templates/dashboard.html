@@ -48,7 +48,7 @@
 <body>
 <div class="layout">
   <header class="head">
-    <div><div class="mark">Commodity Analytics / COT</div><h1 class="title">Oil Positioning Intelligence</h1><div class="subtitle">Institutional positioning across the oil complex · official CFTC reports</div></div>
+    <div><div class="mark">Commodity Analytics / COT</div><h1 class="title">Oil Positioning Intelligence</h1><div class="subtitle">Public CFTC disaggregated positioning · WTI, ULSD and RBOB</div></div>
     <div class="status"><span class="status-dot" id="status-dot"></span><span id="status-text">Awaiting verified source data</span></div>
   </header>
   <nav class="tabs" aria-label="Dashboard pages"><button class="active" data-tab="deep">Market analysis</button><button data-tab="overview">Compare markets</button><button data-tab="history">Data & methodology</button></nav>
@@ -93,7 +93,7 @@
       <div class="grid"><div class="panel full"><h3>Calculation methodology</h3><p class="note">Audit definitions used consistently for every market and trader cohort</p><div class="method"><div><strong>Net positioning</strong><p>Long contracts minus short contracts. Spreading shown separately.</p></div><div><strong>Net / open interest</strong><p>100 × net contracts ÷ total open interest.</p></div><div><strong>Report change</strong><p>Latest net minus immediately previous net. Not necessarily seven calendar days.</p></div><div><strong>1Y / 3Y percentile</strong><p>Causal empirical midrank against up to 1/3 years of weekly-equivalent historical readings.</p></div><div><strong>Gross directional</strong><p>Long + short (does not include separately reported spreading).</p></div><div><strong>Long/short ratio</strong><p>Long ÷ short; undefined for a zero short position.</p></div></div><div class="information">Combined reports reflect delta-adjusted futures plus options, not futures alone. COT observations are retrospective and not predictive trading signals. Publication date is not available in the CFTC row-level historical dataset; displayed dates are position dates, not timestamps of public availability.</div></div></div>
     </section>
   </main>
-  <div class="footer">Source: <a href="https://publicreporting.cftc.gov/stories/s/r4w3-av2u">CFTC Public Reporting Environment</a> · No external data is fetched when opening this dashboard · This report is informational and not investment advice.</div>
+  <div class="footer">Independent public-data research · <a href="https://publicreporting.cftc.gov/stories/s/r4w3-av2u">CFTC source</a> · <a href="https://github.com/keithkgx/COT-OIL-V2">Source code & documentation</a> · Position dates are historical, not real-time · Not affiliated with CFTC or any exchange · Not investment advice.</div>
 </div>
 <script>
 const DATA=__EMBEDDED_DATA__;
@@ -137,7 +137,7 @@ return '<p><strong>'+market+':</strong> '+esc(document.getElementById('cohort').
 '<p>Longs changed '+signed(dl)+' and shorts changed '+signed(ds)+'; changes in '+dominant+' dominated the net change. '+range+month+'</p>'+
 '<p class="small">Changes in reported holdings, not identified trades or a price forecast.</p>';
 }
-function marketOptions(){for(const m of DATA.markets){const o=document.createElement('option');o.value=m.key;o.textContent=m.label+(m.enabled?'':' — ICE pending');o.disabled=!m.enabled;$('market').appendChild(o)}$('market').value='WTI'}
+function marketOptions(){for(const m of DATA.markets.filter(z=>z.enabled)){const o=document.createElement('option');o.value=m.key;o.textContent=m.label;$('market').appendChild(o)}$('market').value='WTI'}
 function renderOverview(s,r){
 const rows=DATA.markets.filter(m=>m.enabled).map(m=>atMarket(m,s)).filter(Boolean);
 $('overview-rows').innerHTML=rows.map(x=>'<tr><td>'+esc(x.market_label)+'</td><td>'+signed(x.net)+'</td><td class="'+tone(x.change_report)+'">'+signed(x.change_report)+'</td><td class="'+tone(x.change_28d)+'">'+signed(x.change_28d)+'</td><td>'+pct(x.net_oi_pct)+'</td><td>'+rankCell(x.net_oi_pctile_1y)+'</td><td>'+rankCell(x.net_oi_pctile_3y)+'</td><td>'+n(x.open_interest)+'</td><td>'+esc(x.report_date)+'</td></tr>').join('')||'<tr><td colspan="9">No comparable observations available</td></tr>';
