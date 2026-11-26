@@ -92,8 +92,14 @@ jobs:
           path: oil-positioning-intelligence/dashboard/index.html
           retention-days: 7
 
+      - name: Build dashboard from saved CFTC history on code changes
+        if: github.event_name == 'push'
+        env:
+          PYTHONPATH: src
+        run: python -m oilcot.cli build
+
       - name: Fetch official CFTC data and rebuild dashboard
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           PYTHONPATH: src
           CFTC_APP_TOKEN: ${{ secrets.CFTC_APP_TOKEN }}
@@ -112,10 +118,42 @@ jobs:
             echo 'No updated observations; nothing to commit.'
           fi
 
-  publish:
-    name: Publish public dashboard (opt-in)
+  pages_status:
+    name: Check public Pages availability
     needs: update
     if: ${{ github.event_name != 'pull_request' && vars.PUBLISH_PAGES == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      enabled: ${{ steps.inspect.outputs.enabled }}
+    steps:
+      - name: Verify GitHub Pages is enabled and uses Actions
+        id: inspect
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if mode="$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '.build_type // ""' 2>/dev/null)"; then
+            if [ "$mode" = "workflow" ]; then
+              echo "enabled=true" >> "$GITHUB_OUTPUT"
+              echo "GitHub Pages is enabled with GitHub Actions publishing."
+            else
+              echo "enabled=false" >> "$GITHUB_OUTPUT"
+              echo "::warning::GitHub Pages exists but its publishing source is not GitHub Actions. Open Settings > Pages and select GitHub Actions."
+              echo "GitHub Pages publishing needs Source: GitHub Actions." >> "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::GitHub Pages is not enabled or is unavailable on this repository's plan. The CFTC update succeeded; public publishing was safely skipped."
+            echo "GitHub Pages is not enabled or is inaccessible. Configure Settings > Pages > Source: GitHub Actions. For private repositories, an eligible GitHub plan is needed; otherwise use a separate public site repository." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  publish:
+    name: Publish public dashboard (when Pages is ready)
+    needs: [update, pages_status]
+    if: ${{ github.event_name != 'pull_request' && needs.pages_status.outputs.enabled == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
