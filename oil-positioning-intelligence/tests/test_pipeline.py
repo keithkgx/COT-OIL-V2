@@ -127,3 +127,28 @@ def test_cftc_transient_timeout_is_retried(monkeypatch):
     assert len(rows) == 1
     assert len(calls) == 2
     assert calls[0]["timeout"] == 60
+
+
+def test_net_oi_changes_are_percentage_points_not_contract_pct():
+    """Cross-market deltas use current and historical net/OI, not a fixed OI denominator."""
+    raw_old = sample_raw("2026-10-13", long=140000, short=90000)
+    raw_old["open_interest_all"] = "2000000"
+    raw_new = sample_raw("2026-11-10", long=152998, short=82414)
+    raw_new["open_interest_all"] = "1800000"
+    data = normalize([raw_old, raw_new], "combined")
+    managed = sorted((r for r in analyze(data) if r["cohort"] == "Managed Money"),
+                     key=lambda r: r["report_date"])
+    current = managed[-1]
+    assert current["change_oi"] == -200000
+    assert current["change_oi_pct"] == -10.0  # measured against PRIOR open interest
+    assert current["change_net_oi_pp"] == pytest.approx(round(100 * (70584 / 1800000 - 50000 / 2000000), 3))
+    assert current["change_28d_net_oi_pp"] == current["change_net_oi_pp"]
+
+
+def test_net_oi_changes_are_missing_without_compatible_prior_history():
+    raw = sample_raw("2026-11-10")
+    current = next(x for x in analyze(normalize([raw], "combined"))
+                   if x["cohort"] == "Managed Money")
+    assert current["change_net_oi_pp"] is None
+    assert current["change_28d_net_oi_pp"] is None
+    assert current["change_oi_pct"] is None

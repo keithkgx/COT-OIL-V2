@@ -2,7 +2,7 @@
 
 **A free, public dashboard for understanding speculative positioning in major oil futures markets.** Built from official [CFTC Commitments of Traders (COT)](https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm) data, updated automatically by GitHub Actions.
 
-**[Open the interactive dashboard](https://keithkgx.github.io/COT-OIL-V2/)** · [Data & methodology](https://keithkgx.github.io/COT-OIL-V2/) (third tab) · [Market coverage research](oil-positioning-intelligence/docs/market-coverage.md)
+**[Open the interactive dashboard](https://keithkgx.github.io/COT-OIL-V2/)** · [Data & methodology](https://keithkgx.github.io/COT-OIL-V2/) (third tab) · [Market coverage research](oil-positioning-intelligence/docs/market-coverage.md) · [ICE Brent & Gasoil integration plan](oil-positioning-intelligence/docs/ice-brent-gasoil-integration.md)
 
 > **What this is:** a historical snapshot of reportable traders' futures and options positioning. **What it is not:** live order flow, individual trader activity, or a trading signal. The displayed date is the **position date**, not necessarily the publication date.
 

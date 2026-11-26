@@ -42,16 +42,29 @@ def main():
         page.get_by_role("button", name="Market analysis").wait_for()
         check_chart(page, "positions-chart")
         check_chart(page, "flows-chart")
+        check_chart(page, "attribution-chart")
+        check_chart(page, "cohort-chart")
+        page.locator("#market-momentum").wait_for()
+        label = page.locator("#attribution-note strong").inner_text()
+        assert "Net change" in label
+        values = page.locator("#attribution-chart .bartext")
+        assert values.count() >= 2, "Attribution values should be readable without hovering"
+        for i in range(values.count()):
+            fill = values.nth(i).evaluate("(el) => getComputedStyle(el).fill")
+            assert fill in ("rgb(242, 247, 255)", "rgb(242,247,255)"), fill
         page.screenshot(path=str(OUT / "market-analysis.png"), full_page=True)
         page.get_by_role("button", name="Compare markets").click()
         check_chart(page, "overview-chart")
+        check_chart(page, "market-change-chart")
+        assert page.locator("#cross-highlights .cross-tile").count() == 3
+        assert page.locator("#overview-rows tr").count() >= 3
         page.screenshot(path=str(OUT / "compare-markets.png"), full_page=True)
         page.get_by_role("button", name="Market analysis").click()
         page.set_viewport_size({"width": 1200, "height": 900})
         check_chart(page, "positions-chart")
         assert not errors, errors[:10]
         browser.close()
-    print("PASS: charts correctly fill visible tabs at desktop and laptop widths")
+    print("PASS: visible attribution labels, cross-market analytics and chart widths at two viewport sizes")
 
 
 if __name__ == "__main__":
