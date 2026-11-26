@@ -140,8 +140,8 @@ jobs:
             echo 'No updated observations; nothing to commit.'
           fi
 
-  pages_status:
-    name: Check public Pages availability
+  pages_package:
+    name: Prepare public dashboard for Pages
     needs: update
     if: ${{ github.event_name != 'pull_request' && vars.PUBLISH_PAGES == 'true' }}
     runs-on: ubuntu-latest
@@ -150,6 +150,7 @@ jobs:
       pages: read
     outputs:
       enabled: ${{ steps.inspect.outputs.enabled }}
+      artifact_name: ${{ steps.artifact.outputs.name }}
     steps:
       - name: Verify GitHub Pages is enabled and uses Actions
         id: inspect
@@ -172,33 +173,58 @@ jobs:
             echo "GitHub Pages is not enabled or is inaccessible. Configure Settings > Pages > Source: GitHub Actions. For private repositories, an eligible GitHub plan is needed; otherwise use a separate public site repository." >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      - name: Checkout latest main data and dashboard
+        if: steps.inspect.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Configure GitHub Pages
+        if: steps.inspect.outputs.enabled == 'true'
+        uses: actions/configure-pages@v5
+
+      # Re-running the upload creates a distinct artifact within the same workflow run.
+      - name: Name this attempt's artifact
+        if: steps.inspect.outputs.enabled == 'true'
+        id: artifact
+        run: echo "name=github-pages-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload public dashboard only
+        if: steps.inspect.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          name: ${{ steps.artifact.outputs.name }}
+          path: oil-positioning-intelligence/dashboard
+
   publish:
     name: Publish public dashboard (when Pages is ready)
-    needs: [update, pages_status]
-    if: ${{ github.event_name != 'pull_request' && needs.pages_status.outputs.enabled == 'true' }}
+    needs: pages_package
+    if: ${{ needs.pages_package.outputs.enabled == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     permissions:
       contents: read
       pages: write
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.retry_deployment.outputs.page_url || steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout latest main data and dashboard
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload public dashboard only
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: oil-positioning-intelligence/dashboard
-
       - name: Deploy to GitHub Pages
         id: deployment
+        continue-on-error: true
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ needs.pages_package.outputs.artifact_name }}
+
+      # The Pages artifact listing can lag behind a successful upload.
+      - name: Allow the artifact listing to catch up
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 50
+
+      - name: Retry GitHub Pages deployment
+        if: steps.deployment.outcome == 'failure'
+        id: retry_deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ needs.pages_package.outputs.artifact_name }}
