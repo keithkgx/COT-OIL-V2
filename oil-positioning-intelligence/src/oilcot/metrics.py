@@ -90,6 +90,12 @@ def analyze(records: list[dict]) -> list[dict]:
                 "change_long": (float(r["long"] - before["long"]) if compatible_before else None),
                 "change_short": (float(r["short"] - before["short"]) if compatible_before else None),
                 "change_oi": (float(r["open_interest"] - before["open_interest"]) if compatible_before else None),
+                "change_oi_pct": (round(100.0 * float(r["open_interest"] - before["open_interest"]) / float(before["open_interest"]), 3)
+                                  if compatible_before and before["open_interest"] > 0 else None),
+                "change_net_oi_pp": (round(float(r["net_oi_pct"] - before["net_oi_pct"]), 3)
+                                     if compatible_before else None),
+                "change_28d_net_oi_pp": (round(float(r["net_oi_pct"] - month4["net_oi_pct"]), 3)
+                                         if month4 is not None else None),
                 "change_7d": (float(r["net"] - week["net"]) if week is not None else None),
                 "change_28d": (float(r["net"] - month4["net"]) if month4 is not None else None),
             })
