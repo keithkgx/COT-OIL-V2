@@ -214,6 +214,10 @@ $('kpis').innerHTML=card('01 · Net position',r?signed(r.net):'—','Long − sh
  card('02 · Open interest',r?n(r.open_interest):'—',r&&isNumber(r.change_oi)?signed(r.change_oi)+' vs previous observation':'Outstanding market-wide contracts')+
  card('03 · Net / open interest',r?pct(r.net_oi_pct):'—','Net as % of total open interest')+
  card('04 · 3Y net/OI rank',r?rankCell(r.net_oi_pctile_3y):'—','Historical weekly-equivalent percentile');
+$('market-momentum').innerHTML='<span>Latest Δ net: <b class="'+tone(r?.change_report)+'">'+(r?signed(r.change_report):'—')+'</b> contracts</span>'+
+'<span>Four-week Δ net: <b class="'+tone(r?.change_28d)+'">'+(r?signed(r.change_28d):'—')+'</b> contracts</span>'+
+'<span>Latest Δ net/OI: <b class="'+tone(r?.change_net_oi_pp)+'">'+(r?signedDecimal(r.change_net_oi_pp,2):'—')+'</b> pp</span>'+
+'<span>Regime: <b>'+esc(marketRegime(r))+'</b></span>';
 $('commentary').innerHTML=commentary(r);
 const x=rows.map(z=>z.report_date);
 draw('positions-chart',[
@@ -222,19 +226,39 @@ draw('positions-chart',[
 {x,y:rows.map(z=>z.net),name:'Net',mode:'lines',type:'scatter',line:{color:'#78aef5',width:2.5}}
 ],{yaxis:{title:'Contracts'}});
 const longDelta=r?.change_long??null,shortDelta=r?.change_short??null;
-draw('attribution-chart',[{x:[longDelta,shortDelta===null?null:-shortDelta],y:['Long-side contribution','Short-side contribution'],orientation:'h',type:'bar',marker:{color:[longDelta>=0?'#40c8a4':'#fa8d84',shortDelta!==null&&-shortDelta>=0?'#40c8a4':'#fa8d84']}}],{showlegend:false,margin:{l:155,r:25,t:25,b:40},xaxis:{title:'Contribution to net change'}});
-$('attribution-note').textContent=r&&longDelta!==null?'Net change '+signed(r.change_report)+' = Δ longs '+signed(longDelta)+' − Δ shorts ('+signed(shortDelta)+') · '+(r.previous_date||'—')+' → '+r.report_date:'Previous observation required for attribution.';
+const longContribution=longDelta===null?null:Number(longDelta);
+const shortContribution=shortDelta===null?null:-Number(shortDelta);
+const vals=[longContribution,shortContribution].filter(z=>isNumber(z));
+const lim=Math.max(1,...vals.map(z=>Math.abs(z))),pad=lim*0.38;
+draw('attribution-chart',[{
+ x:[longContribution,shortContribution],y:['Change in longs (Δ long)','Short-side effect (−Δ short)'],
+ orientation:'h',type:'bar',
+ marker:{color:[longContribution===null?'#516477':longContribution>=0?'#40c8a4':'#fa8d84',shortContribution===null?'#516477':shortContribution>=0?'#40c8a4':'#fa8d84']},
+ text:[signed(longContribution),signed(shortContribution)],
+ textposition:'outside',textfont:{color:'#f2f7ff',size:15,family:'Arial, sans-serif'},cliponaxis:false,
+ hovertemplate:'%{y}<br>%{x:+,.0f} contracts<extra></extra>'
+}],{showlegend:false,margin:{l:190,r:72,t:25,b:45},xaxis:{title:'Contribution to net change (contracts)',range:[-lim-pad,lim+pad],zeroline:true,zerolinecolor:'#8da2b5'},yaxis:{automargin:true}});
+$('attribution-note').innerHTML=r&&isNumber(longContribution)&&isNumber(shortContribution)?
+ '<strong>Net change '+signed(r.change_report)+' contracts</strong> = '+signed(longContribution)+' long-side + '+signed(shortContribution)+' short-side contribution.<div class="small">'+(r.previous_date||'—')+' → '+r.report_date+' · Green increases net positioning; red decreases it. '+esc(contributionStory(r))+'</div>':
+ 'A previous comparable observation is required to attribute this change.';
 const limit=new Date((r?.report_date||s.asof)+'T00:00:00Z');limit.setUTCFullYear(limit.getUTCFullYear()-1);const changes=rows.filter(z=>z.report_date>=limit.toISOString().slice(0,10)&&isNumber(z.change_long)&&isNumber(z.change_short));
 draw('flows-chart',[
 {x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_long),type:'bar',name:'Δ longs',marker:{color:'#40c8a4'}},
 {x:changes.map(z=>z.report_date),y:changes.map(z=>-z.change_short),type:'bar',name:'−Δ shorts',marker:{color:'#fa8d84'}},
 {x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_report),type:'scatter',mode:'lines',name:'Net change',line:{color:'#efc07d',width:2}}
 ],{barmode:'relative',yaxis:{title:'Contracts per observation'}});
-$('oi-context').textContent='Total outstanding contracts · '+(r&&isNumber(r.change_oi)?signed(r.change_oi)+' vs prior observation ('+(100*r.change_oi/r.open_interest).toFixed(2)+'% of current OI)':'change unavailable');
+$('oi-context').textContent='Total outstanding contracts · '+(r&&isNumber(r.change_oi)?signed(r.change_oi)+' vs prior observation ('+signedDecimal(r.change_oi_pct,2)+'% vs prior OI)':'change unavailable');
 draw('oi-chart',[{x,y:rows.map(z=>z.open_interest),type:'scatter',mode:'lines',line:{color:'#78aef5',width:2},name:'Open interest'}],{showlegend:false,yaxis:{title:'Contracts'}});
 const other=DATA.records.filter(z=>z.market===s.market&&z.basis===s.basis&&z.report_date<=s.asof);
 const names=['Managed Money','Producer/Merchant','Swap Dealers','Other Reportables'];
-$('cohort-rows').innerHTML=names.map(g=>{const rr=other.filter(z=>z.cohort===g).sort((a,b)=>a.report_date.localeCompare(b.report_date)),v=rr[rr.length-1];return v?'<tr><td>'+esc(g)+'</td><td>'+signed(v.net)+'</td><td class="'+tone(v.change_report)+'">'+signed(v.change_report)+'</td><td>'+pct(v.net_oi_pct)+'</td><td>'+rankCell(v.net_oi_pctile_3y)+'</td></tr>':''}).join('')||'<tr><td colspan="5">No participant data</td></tr>';
+const latestByGroup=names.map(g=>{const v=other.filter(z=>z.cohort===g).sort((a,b)=>a.report_date.localeCompare(b.report_date));return v[v.length-1]||null});
+const pairs=latestByGroup.map((v,i)=>({group:names[i],r:v})).filter(z=>z.r);
+draw('cohort-chart',[{x:pairs.map(z=>z.r.net_oi_pct),y:pairs.map(z=>z.group),orientation:'h',type:'bar',
+ marker:{color:pairs.map(z=>z.r.net_oi_pct>=0?'#40c8a4':'#fa8d84')},
+ text:pairs.map(z=>pct(z.r.net_oi_pct)),textposition:'outside',textfont:{color:'#f2f7ff',size:12},cliponaxis:false,
+ hovertemplate:'%{y}: %{x:.2f}% of OI<extra></extra>'}],
+ {showlegend:false,margin:{l:150,r:85,t:20,b:30},xaxis:{title:'Net/OI (%)',zeroline:true,zerolinecolor:'#8da2b5'},yaxis:{automargin:true}});
+$('cohort-rows').innerHTML=pairs.map(z=>{const v=z.r;return '<tr><td>'+esc(z.group)+'</td><td>'+signed(v.net)+'</td><td class="'+tone(v.change_report)+'">'+signed(v.change_report)+'</td><td>'+pct(v.net_oi_pct)+'</td><td>'+rankCell(v.net_oi_pctile_3y)+'</td></tr>'}).join('')||'<tr><td colspan="5">No participant data</td></tr>';
 }
 function renderHistory(s,rows){$('history-rows').innerHTML=rows.slice(-75).reverse().map(r=>`<tr><td>${esc(r.report_date)}</td><td>${n(r.long)}</td><td>${n(r.short)}</td><td>${n(r.spreading)}</td><td class="${tone(r.net)}">${signed(r.net)}</td><td>${pct(r.net_oi_pct)}</td><td>${pct(r.net_oi_pctile_1y)}</td><td>${pct(r.net_oi_pctile_3y)}</td><td>${signed(r.change_report)}</td></tr>`).join('');}
 function render(){const s=state(),r=latest(s),rows=windowRows(allRows(s.market,s.basis,s.cohort),s.years,s.asof);
