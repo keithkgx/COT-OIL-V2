@@ -54,7 +54,7 @@ def test_methodology_and_source_safety():
     assert "Spreading" in page
     assert "Futures + Options Combined" in page
     assert "Publication date is not available" in page
-    assert "holdings, not identified trades" in page
+    assert "Descriptive changes in reported holdings" in page
     assert ".layout{width:100%;max-width:none" in page
     assert (ROOT / "docs" / "market-coverage.md").exists()
 
