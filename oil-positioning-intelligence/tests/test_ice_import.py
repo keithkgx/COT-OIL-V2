@@ -54,7 +54,9 @@ def test_private_build_enables_only_imported_contracts(tmp_path):
     brent = next(r for r in private["records"] if r["market"] == "BRENT" and r["cohort"] == "Managed Money")
     assert brent["net"] == 100
     assert brent["net_oi_pct"] == 10.0
-    assert {r["source"] for r in payload(public_file)["records"]} == {"CFTC"}
+    public = payload(public_file)
+    assert {r["source"] for r in public["records"]} == {"CFTC"}
+    assert {m["key"] for m in public["markets"]} == {"WTI", "ULSD", "RBOB"}
 
 
 def test_public_build_rejects_ice_and_private_build_rejects_repo_output(tmp_path):

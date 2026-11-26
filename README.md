@@ -2,7 +2,7 @@
 
 **A free, public dashboard for understanding speculative positioning in major oil futures markets.** Built from official [CFTC Commitments of Traders (COT)](https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm) data, updated automatically by GitHub Actions.
 
-**[Open the interactive dashboard](https://keithkgx.github.io/COT-OIL-V2/)** · [Data & methodology](https://keithkgx.github.io/COT-OIL-V2/) (third tab) · [Market coverage research](oil-positioning-intelligence/docs/market-coverage.md) · [ICE Brent & Gasoil integration plan](oil-positioning-intelligence/docs/ice-brent-gasoil-integration.md)
+**[Open the interactive dashboard](https://keithkgx.github.io/COT-OIL-V2/)** · [Data & methodology](https://keithkgx.github.io/COT-OIL-V2/) (third tab) · [Market coverage research](oil-positioning-intelligence/docs/market-coverage.md)
 
 > **What this is:** a historical snapshot of reportable traders' futures and options positioning. **What it is not:** live order flow, individual trader activity, or a trading signal. The displayed date is the **position date**, not necessarily the publication date.
 
@@ -27,8 +27,6 @@ Select an **as-of position date**, instrument, participant category, report basi
 | RBOB Gasoline | NYMEX | CFTC Disaggregated | `111659` |
 
 **Default:** Managed Money; **Futures and Options Combined** (delta-adjusted options included). Futures Only is available as an alternative, but the two report bases overlap and should **not** be added together.
-
-**Local ICE coverage:** Build a local dashboard with ICE Brent (`B`) and ICE Low Sulphur Gasoil (`G`) using an authorized export. The local version adds WTI/Brent and ULSD/Gasoil comparison views. GitHub Pages publishes the CFTC series. See the [local ICE setup and data-access guide](oil-positioning-intelligence/docs/ice-brent-gasoil-integration.md).
 
 ## How data updates
 
