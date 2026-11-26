@@ -79,7 +79,7 @@ jobs:
           page = Path('dashboard/index.html')
           assert page.exists() and page.stat().st_size > 100_000
           text = page.read_text(encoding='utf-8')
-          for needle in ('id="asof"', 'id="desk-brief"', 'id="flows-chart"', '25'):
+          for needle in ('id="asof"', 'id="kpis"', 'id="flows-chart"', 'id="overview-chart"'):
               assert needle in text, needle
           print(f'Dashboard preview generated: {page.stat().st_size:,} bytes')
           PY
