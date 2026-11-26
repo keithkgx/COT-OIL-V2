@@ -94,7 +94,7 @@ button.action:disabled{opacity:.5;cursor:default}
 
       <div class="stage-heading"><span class="stage-number">02</span><div><h2>Positioning history</h2><p>Understand the selected participant group's net, long and short exposure before interpreting the latest change.</p></div></div>
       <div class="panel">
-        <div class="history-control"><div><h3>Positioning history</h3><p class="note" id="history-metric-note"></p></div>
+        <div class="history-control"><p class="note" id="history-metric-note"></p>
           <label class="filter">VIEW<select id="history-metric"><option value="contracts">Long, short and net contracts</option><option value="net-oi">Net / open interest</option><option value="rank">Three-year net/OI rank</option></select></label>
         </div>
         <div class="chart" id="positions-chart"></div>
@@ -147,7 +147,7 @@ const signed=v=>(v===null||v===undefined||!Number.isFinite(Number(v)))?'—':(Nu
 const pct=v=>(v===null||v===undefined||!Number.isFinite(Number(v)))?'—':Number(v).toFixed(1)+'%';
 const tone=v=>v===null||v===undefined?'':Number(v)>0?'pos':Number(v)<0?'neg':'';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const cfg={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a4b3c4',family:'system-ui, sans-serif',size:11},margin:{l:55,r:20,t:18,b:40},showlegend:true,legend:{orientation:'h',x:0,y:1.2},hovermode:'x unified',xaxis:{gridcolor:'#243347',zerolinecolor:'#36465d',tickfont:{size:10}},yaxis:{gridcolor:'#243347',zerolinecolor:'#36465d',tickfont:{size:10}}};
+const cfg={paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#a4b3c4',family:'system-ui, sans-serif',size:11},margin:{l:55,r:20,t:18,b:40},showlegend:true,legend:{orientation:'h',x:0,y:1.2},hovermode:'x unified',xaxis:{automargin:true,gridcolor:'#243347',zerolinecolor:'#36465d',tickfont:{size:10}},yaxis:{automargin:true,gridcolor:'#243347',zerolinecolor:'#36465d',tickfont:{size:10}}};
 const chartOpts={responsive:true,displaylogo:false,toImageButtonOptions:{format:'png',filename:'oil_cot_chart',scale:2}};
 function state(){return{market:$('market').value,basis:$('basis').value,cohort:$('cohort').value,years:+$('window').value,asof:$('asof').value||DATA.last_observation}}
 function allRows(market,basis,cohort){return DATA.records.filter(r=>(!market||r.market===market)&&r.basis===basis&&r.cohort===cohort).sort((a,b)=>a.report_date.localeCompare(b.report_date))}
@@ -254,7 +254,7 @@ function renderOverview(s){
   return {x:history.map(r=>r.report_date),y:history.map(r=>r.net_oi_pct),name:v.market,type:'scatter',mode:'lines',
    line:{width:2.3,color:v.color},hovertemplate:'%{x}<br>%{y:.2f}% of OI<extra>%{fullData.name}</extra>'};
  }).filter(v=>v.x.length);
- draw('overview-chart',lines,{yaxis:{ticksuffix:'%',title:'Net/OI (%)'},hovermode:'x unified'});
+ draw('overview-chart',lines,{yaxis:{ticksuffix:'%',title:{text:'Net/OI'}},hovermode:'x unified'});
 
  const changeTrace=(values,metric,name,color)=>({
   x:values.map(r=>r[metric]),y:values.map(r=>r.market),type:'bar',orientation:'h',name,marker:{color},
@@ -266,7 +266,7 @@ function renderOverview(s){
   changeTrace(monthly,'change_28d_net_oi_pp','Four weeks','#efc07d')
  ].filter(trace=>trace.x.length);
  draw('market-change-chart',changes,{
-  barmode:'group',margin:{l:55,r:48,t:30,b:55},xaxis:{title:'Change in net/OI (pp)',zeroline:true,zerolinecolor:'#677990'},
+  barmode:'group',margin:{l:55,r:48,t:30,b:55},xaxis:{title:{text:'Change in net/OI (pp)'},zeroline:true,zerolinecolor:'#677990'},
   yaxis:{type:'category',categoryorder:'array',categoryarray:markets.map(m=>m.key).reverse()},
   legend:{orientation:'h',x:0,y:1.16},hovermode:'closest',
   annotations:changes.length?[]:[chartMessage('No changes share comparable dates')]
@@ -283,8 +283,8 @@ function renderOverview(s){
   hovertemplate:'%{text}<br>3Y percentile %{x:.1f}<br>4W change %{y:+.2f} pp<br>Net/OI %{customdata:.2f}%<extra></extra>'
  }]:[],{
   showlegend:false,hovermode:'closest',margin:{l:65,r:30,t:32,b:55},
-  xaxis:{range:[0,100],tickvals:[0,25,50,75,100],title:'Three-year net/OI percentile'},
-  yaxis:{title:'Four-week change (pp)',zeroline:true,zerolinecolor:'#677990',rangemode:'tozero'},
+  xaxis:{range:[0,100],tickvals:[0,25,50,75,100],title:{text:'Three-year net/OI percentile'}},
+  yaxis:{title:{text:'Four-week change (pp)'},zeroline:true,zerolinecolor:'#677990',rangemode:'tozero'},
   shapes:mapped.length>=2?quartiles:[],
   annotations:mapped.length>=2?[]:[chartMessage('Need two aligned markets with three-year ranks')]
  });
@@ -302,7 +302,7 @@ function renderPositionHistory(rows){
  });
  if(view==='contracts'){
   $('history-metric-note').textContent='Directional contracts. Spreading is available in the data table.';
-  draw('positions-chart',[series('long','Long','#40c8a4'),series('short','Short','#fa8d84'),series('net','Net','#78aef5')],{yaxis:{title:'Contracts'}});
+  draw('positions-chart',[series('long','Long','#40c8a4'),series('short','Short','#fa8d84'),series('net','Net','#78aef5')],{yaxis:{title:{text:'Contracts'}}});
   return;
  }
  const rank=view==='rank';
@@ -316,7 +316,7 @@ function renderPositionHistory(rows){
  })):[];
  draw('positions-chart',[trace],{
   showlegend:false,shapes:quartiles,
-  yaxis:rank?{range:[0,100],tickvals:[0,25,50,75,100],title:'Percentile'}:{ticksuffix:'%',title:'Net/OI',zeroline:true},
+  yaxis:rank?{range:[0,100],tickvals:[0,25,50,75,100],title:{text:'Percentile'}}:{ticksuffix:'%',title:{text:'Net/OI'},zeroline:true},
   annotations:trace.y.some(isNumber)?[]:[chartMessage('No comparable history in this window')]
  });
 }
@@ -346,7 +346,7 @@ draw('attribution-chart',[{
  text:[signed(longContribution),signed(shortContribution)],
  textposition:'outside',textfont:{color:'#f2f7ff',size:15,family:'Arial, sans-serif'},cliponaxis:false,
  hovertemplate:'%{y}<br>%{x:+,.0f} contracts<extra></extra>'
-}],{showlegend:false,margin:{l:72,r:48,t:25,b:55},xaxis:{title:'Contribution to net change (contracts)',range:[-lim-pad,lim+pad],zeroline:true,zerolinecolor:'#8da2b5'},yaxis:{automargin:true,autorange:'reversed'}});
+}],{showlegend:false,margin:{l:72,r:48,t:25,b:55},xaxis:{title:{text:'Contribution to net (contracts)'},range:[-lim-pad,lim+pad],zeroline:true,zerolinecolor:'#8da2b5'},yaxis:{autorange:'reversed'}});
 $('attribution-note').innerHTML=r&&isNumber(longContribution)&&isNumber(shortContribution)?
  '<strong>Net change '+signed(r.change_report)+' contracts</strong> = '+signed(longContribution)+' long-side + '+signed(shortContribution)+' short-side contribution.<div class="small">'+(r.previous_date||'—')+' → '+r.report_date+' · Green increases net positioning; red decreases it. '+esc(contributionStory(r))+'</div>':
  'A previous comparable observation is required to attribute this change.';
@@ -358,18 +358,21 @@ draw('flows-chart',[
 {x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_long),type:'bar',name:'Δ longs',marker:{color:'#40c8a4'}},
 {x:changes.map(z=>z.report_date),y:changes.map(z=>-z.change_short),type:'bar',name:'−Δ shorts',marker:{color:'#78aef5'}},
 {x:changes.map(z=>z.report_date),y:changes.map(z=>z.change_report),type:'scatter',mode:'lines',name:'Net change',line:{color:'#efc07d',width:2}}
-],{barmode:'relative',yaxis:{title:'Contracts per observation'}});
+],{barmode:'relative',yaxis:{title:{text:'Contracts per observation'}}});
 $('oi-context').textContent='Total outstanding contracts · '+(r&&isNumber(r.change_oi)?signed(r.change_oi)+' vs prior observation ('+signedDecimal(r.change_oi_pct,2)+'% vs prior OI)':'change unavailable');
-draw('oi-chart',[{x,y:rows.map(z=>z.open_interest),type:'scatter',mode:'lines',line:{color:'#78aef5',width:2},name:'Open interest'}],{showlegend:false,yaxis:{title:'Contracts'}});
+draw('oi-chart',[{x,y:rows.map(z=>z.open_interest),type:'scatter',mode:'lines',line:{color:'#78aef5',width:2},name:'Open interest'}],{showlegend:false,yaxis:{title:{text:'Contracts'}}});
 const other=DATA.records.filter(z=>z.market===s.market&&z.basis===s.basis&&z.report_date===r?.report_date);
 const names=['Managed Money','Producer/Merchant','Swap Dealers','Other Reportables'];
 const participants=names.map(group=>other.find(row=>row.cohort===group)).filter(Boolean);
+const participantValues=participants.map(z=>z.net_oi_pct);
+const low=Math.min(0,...participantValues),high=Math.max(0,...participantValues);
+const labelPadding=Math.max(1,(high-low)*0.4);
 $('cohort-note').textContent=r?'Reportable categories for the '+r.report_date+' position date. Highlighted row is the selected category.':'No matching position date.';
-draw('cohort-chart',[{x:participants.map(z=>z.net_oi_pct),y:participants.map(z=>z.cohort),orientation:'h',type:'bar',
+draw('cohort-chart',[{x:participantValues,y:participants.map(z=>z.cohort),orientation:'h',type:'bar',
  marker:{color:participants.map(z=>z.net_oi_pct>=0?'#40c8a4':'#fa8d84')},
  text:participants.map(z=>pct(z.net_oi_pct)),textposition:'outside',textfont:{color:'#f2f7ff',size:12},cliponaxis:false,
  hovertemplate:'%{y}: %{x:.2f}% of OI<extra></extra>'}],
- {showlegend:false,margin:{l:118,r:48,t:20,b:42},xaxis:{title:'Net/OI (%)',zeroline:true,zerolinecolor:'#8da2b5'},yaxis:{automargin:true,autorange:'reversed'}});
+ {showlegend:false,margin:{l:118,r:30,t:20,b:50},xaxis:{title:{text:'Net/OI'},ticksuffix:'%',range:[low-labelPadding,high+labelPadding],zeroline:true,zerolinecolor:'#8da2b5'},yaxis:{autorange:'reversed'}});
 $('cohort-rows').innerHTML=participants.map(v=>'<tr'+(v.cohort===s.cohort?' class="selected-cohort"':'')+'><td>'+esc(v.cohort)+'</td><td>'+signed(v.net)+'</td><td class="'+tone(v.change_report)+'">'+signed(v.change_report)+'</td><td>'+pct(v.net_oi_pct)+'</td><td class="'+tone(v.change_net_oi_pp)+'">'+signedDecimal(v.change_net_oi_pp,2)+'</td><td>'+rankCell(v.net_oi_pctile_3y)+'</td></tr>').join('')||'<tr><td colspan="6">No participant data</td></tr>';
 }
 function renderHistory(rows){

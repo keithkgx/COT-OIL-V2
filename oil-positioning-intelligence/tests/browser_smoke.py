@@ -116,6 +116,8 @@ def main():
         check_chart(page, "overview-chart")
         check_chart(page, "market-change-chart")
         check_chart(page, "positioning-map")
+        expect(page.locator("#positioning-map .xtitle")).to_have_text("Three-year net/OI percentile")
+        expect(page.locator("#positioning-map .ytitle")).to_have_text("Four-week change (pp)")
         expect(page.locator("#market-filter")).to_be_hidden()
         assert page.locator("#cross-highlights .cross-tile").count() == 3
         assert page.locator("#overview-rows tr").count() >= 3
