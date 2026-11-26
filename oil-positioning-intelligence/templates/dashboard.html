@@ -186,9 +186,27 @@ function signedDecimal(v,decimals=1){if(!isNumber(v))return '—';const x=Number
 function marketOptions(){for(const m of DATA.markets.filter(z=>z.enabled)){const o=document.createElement('option');o.value=m.key;o.textContent=m.label;$('market').appendChild(o)}$('market').value='WTI'}
 function renderOverview(s,r){
 const rows=DATA.markets.filter(m=>m.enabled).map(m=>atMarket(m,s)).filter(Boolean);
-$('overview-rows').innerHTML=rows.map(x=>'<tr><td>'+esc(x.market_label)+'</td><td>'+signed(x.net)+'</td><td class="'+tone(x.change_report)+'">'+signed(x.change_report)+'</td><td class="'+tone(x.change_28d)+'">'+signed(x.change_28d)+'</td><td>'+pct(x.net_oi_pct)+'</td><td>'+rankCell(x.net_oi_pctile_1y)+'</td><td>'+rankCell(x.net_oi_pctile_3y)+'</td><td>'+n(x.open_interest)+'</td><td>'+esc(x.report_date)+'</td></tr>').join('')||'<tr><td colspan="9">No comparable observations available</td></tr>';
-const lines=DATA.markets.filter(m=>m.enabled).map((m,i)=>{const v=windowRows(allRows(m.key,s.basis,s.cohort),s.years,s.asof);return {x:v.map(z=>z.report_date),y:v.map(z=>z.net_oi_pct),name:m.label,type:'scatter',mode:'lines',line:{width:2,color:['#40c8a4','#78aef5','#efc07d','#b29bfc','#d07dd9'][i%5]}}}).filter(x=>x.x.length);
-draw('overview-chart',lines,{yaxis:{ticksuffix:'%',title:'Net position / OI (%)'}});
+const ready=rows.filter(z=>isNumber(z.net_oi_pctile_3y));
+const widest=ready.slice().sort((a,b)=>Math.abs(b.net_oi_pctile_3y-50)-Math.abs(a.net_oi_pctile_3y-50))[0];
+const strongest=rows.filter(z=>isNumber(z.change_net_oi_pp)).sort((a,b)=>Math.abs(b.change_net_oi_pp)-Math.abs(a.change_net_oi_pp))[0];
+const month=rows.filter(z=>isNumber(z.change_28d_net_oi_pp)).sort((a,b)=>Math.abs(b.change_28d_net_oi_pp)-Math.abs(a.change_28d_net_oi_pp))[0];
+const tile=(name,headline,subtitle)=>'<div class="cross-tile"><div class="micro">'+name+'</div><div class="metric">'+headline+'</div><div class="context">'+subtitle+'</div></div>';
+$('cross-highlights').innerHTML=
+ tile('Most extreme historical rank',widest?esc(widest.market)+' · '+ordinal(widest.net_oi_pctile_3y):'Unavailable',widest?'3Y net/OI rank · '+pct(widest.net_oi_pct)+' net/OI; compared with its own history':'Insufficient history')+
+ tile('Largest change since last report',strongest?esc(strongest.market)+' · '+signedDecimal(strongest.change_net_oi_pp,2)+' pp':'Unavailable','Change in net/OI ratio, including movement in the denominator (OI)')+
+ tile('Largest change over four weeks',month?esc(month.market)+' · '+signedDecimal(month.change_28d_net_oi_pp,2)+' pp':'Unavailable','Four-week change in net/OI; not an observed trade flow');
+const dates=[...new Set(rows.map(z=>z.report_date))].sort();
+$('cross-asof-note').textContent=dates.length>1?
+'Data-alignment caution: these markets have different latest position dates ('+dates.join(', ')+'). Comparisons may be asynchronous.':
+'All included markets use position date '+(dates[0]||'unavailable')+'. Percentile rankings always compare each market against its own history.';
+$('overview-rows').innerHTML=rows.map(x=>'<tr><td>'+esc(x.market_label)+'</td><td>'+signed(x.net)+'</td><td class="'+tone(x.change_report)+'">'+signed(x.change_report)+'</td><td class="'+tone(x.change_28d)+'">'+signed(x.change_28d)+'</td><td>'+pct(x.net_oi_pct)+'</td><td class="'+tone(x.change_net_oi_pp)+'">'+signedDecimal(x.change_net_oi_pp,2)+'</td><td class="'+tone(x.change_28d_net_oi_pp)+'">'+signedDecimal(x.change_28d_net_oi_pp,2)+'</td><td>'+rankCell(x.net_oi_pctile_1y)+'</td><td>'+rankCell(x.net_oi_pctile_3y)+'</td><td>'+n(x.open_interest)+'</td><td>'+esc(x.report_date)+'</td></tr>').join('')||'<tr><td colspan="11">No comparable observations</td></tr>';
+const lines=DATA.markets.filter(m=>m.enabled).map((m,i)=>{const v=windowRows(allRows(m.key,s.basis,s.cohort),s.years,s.asof);return {x:v.map(z=>z.report_date),y:v.map(z=>z.net_oi_pct),name:m.key,type:'scatter',mode:'lines',line:{width:2.3,color:['#40c8a4','#78aef5','#efc07d','#b29bfc','#d07dd9'][i%5]},hovertemplate:'%{x}<br>%{y:.2f}% of OI<extra>%{fullData.name}</extra>'}}).filter(x=>x.x.length);
+draw('overview-chart',lines,{yaxis:{ticksuffix:'%',title:'Net/OI (%)'},hovermode:'x unified'});
+const labels=rows.map(z=>z.market);
+draw('market-change-chart',[
+ {x:rows.map(z=>z.change_net_oi_pp),y:labels,type:'bar',orientation:'h',name:'Latest report Δ (pp)',marker:{color:'#78aef5'},text:rows.map(z=>isNumber(z.change_net_oi_pp)?signedDecimal(z.change_net_oi_pp,2):'—'),textposition:'outside',textfont:{color:'#edf4fc',size:12},cliponaxis:false,hovertemplate:'%{y}<br>%{x:.2f} percentage points<extra>Latest report</extra>'},
+ {x:rows.map(z=>z.change_28d_net_oi_pp),y:labels,type:'bar',orientation:'h',name:'4-week Δ (pp)',marker:{color:'#efc07d'},text:rows.map(z=>isNumber(z.change_28d_net_oi_pp)?signedDecimal(z.change_28d_net_oi_pp,2):'—'),textposition:'outside',textfont:{color:'#edf4fc',size:12},cliponaxis:false,hovertemplate:'%{y}<br>%{x:.2f} percentage points<extra>Four weeks</extra>'}
+],{barmode:'group',margin:{l:90,r:72,t:24,b:65},xaxis:{title:'Change in net/OI (percentage points)',zeroline:true,zerolinecolor:'#677990'},legend:{orientation:'h',x:0,y:1.18},hovermode:'closest'});
 }
 function renderDeep(s,r,rows){
 $('analysis-title').textContent='Positioning snapshot · '+(r?r.market_label:s.market);
