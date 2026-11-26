@@ -1,6 +1,5 @@
 """Causal positioning metrics with calendar-aware history, no future observations."""
 from __future__ import annotations
-from datetime import timedelta
 import math
 import pandas as pd
 
@@ -76,6 +75,12 @@ def analyze(records: list[dict]) -> list[dict]:
                 week = None
             if month4 is not None and month4["contract_units"] != r["contract_units"]:
                 month4 = None
+            positioning_pp = oi_pp = None
+            if compatible_before:
+                # Change holdings at prior OI, then change OI at current holdings.
+                net_at_prior_oi = 100 * r["net"] / before["open_interest"]
+                positioning_pp = round(float(net_at_prior_oi - before["net_oi_pct"]), 4)
+                oi_pp = round(float(r["net_oi_pct"] - net_at_prior_oi), 4)
             row = {key: r[key] for key in keys}
             row.update({
                 "market_label": r["market_label"], "contract_code": r["contract_code"],
@@ -86,6 +91,7 @@ def analyze(records: list[dict]) -> list[dict]:
                 "net_oi_pct": round(float(r["net_oi_pct"]), 3),
                 "long_short_ratio": _safe(r["long_short_ratio"]),
                 "previous_date": before["report_date"].strftime("%Y-%m-%d") if before is not None else None,
+                "reference_28d_date": month4["report_date"].strftime("%Y-%m-%d") if month4 is not None else None,
                 "change_report": (float(r["net"] - before["net"]) if compatible_before else None),
                 "change_long": (float(r["long"] - before["long"]) if compatible_before else None),
                 "change_short": (float(r["short"] - before["short"]) if compatible_before else None),
@@ -94,6 +100,8 @@ def analyze(records: list[dict]) -> list[dict]:
                                   if compatible_before and before["open_interest"] > 0 else None),
                 "change_net_oi_pp": (round(float(r["net_oi_pct"] - before["net_oi_pct"]), 3)
                                      if compatible_before else None),
+                "change_net_oi_position_pp": positioning_pp,
+                "change_net_oi_open_interest_pp": oi_pp,
                 "change_28d_net_oi_pp": (round(float(r["net_oi_pct"] - month4["net_oi_pct"]), 3)
                                          if month4 is not None else None),
                 "change_7d": (float(r["net"] - week["net"]) if week is not None else None),

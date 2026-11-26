@@ -103,7 +103,8 @@ A successful fetch does not mean a new report has been published. Always inspect
 - `net_oi_pct = 100 * net / open_interest`.
 - `change_report = current net - prior observed net` (not necessarily seven days).
 - `change_long = current long - prior long`; `change_short = current short - prior short`. Therefore `change_report = change_long - change_short`.
-- 7-day and 28-day comparisons use calendar-aware lookbacks with tolerances for absent report dates.
+- 7-day and 28-day comparisons use calendar-aware lookbacks with tolerances for absent report dates. The comparison tab ranks changes only when at least two markets have the same selected position date and the same reference date for that metric.
+- The report-on-report change in net/OI splits into `100 × (net − prior net) / prior OI` from holdings and `100 × net × (1 / OI − 1 / prior OI)` from open interest. Both terms are in percentage points. Small discrepancies in the displayed sum can arise from rounding.
 - 1Y and 3Y percentiles use a causal empirical midrank over comparable weekly-equivalent observations in the trailing calendar window; they never use future readings.
 - Percentiles are relative to a contract's own history, not a probability of a price move.
 

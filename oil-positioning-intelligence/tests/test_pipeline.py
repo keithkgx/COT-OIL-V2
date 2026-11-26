@@ -143,6 +143,24 @@ def test_net_oi_changes_are_percentage_points_not_contract_pct():
     assert current["change_oi_pct"] == -10.0  # measured against PRIOR open interest
     assert current["change_net_oi_pp"] == pytest.approx(round(100 * (70584 / 1800000 - 50000 / 2000000), 3))
     assert current["change_28d_net_oi_pp"] == current["change_net_oi_pp"]
+    assert current["reference_28d_date"] == "2026-10-13"
+    assert current["change_net_oi_position_pp"] == pytest.approx(1.0292)
+    assert current["change_net_oi_open_interest_pp"] == pytest.approx(0.3921)
+    assert current["change_net_oi_position_pp"] + current["change_net_oi_open_interest_pp"] == pytest.approx(
+        current["change_net_oi_pp"], abs=0.0006
+    )
+
+
+def test_open_interest_only_can_make_a_net_short_more_negative():
+    old = sample_raw("2026-11-03", long=50000, short=150000)
+    new = sample_raw("2026-11-10", long=50000, short=150000)
+    new["open_interest_all"] = "1500000"
+    rows = analyze(normalize([old, new], "combined"))
+    current = next(r for r in rows if r["cohort"] == "Managed Money" and r["report_date"] == "2026-11-10")
+    assert current["change_report"] == 0
+    assert current["change_net_oi_position_pp"] == 0
+    assert current["change_net_oi_open_interest_pp"] == pytest.approx(-1.1111)
+    assert current["change_net_oi_pp"] == pytest.approx(-1.111)
 
 
 def test_net_oi_changes_are_missing_without_compatible_prior_history():
@@ -152,3 +170,6 @@ def test_net_oi_changes_are_missing_without_compatible_prior_history():
     assert current["change_net_oi_pp"] is None
     assert current["change_28d_net_oi_pp"] is None
     assert current["change_oi_pct"] is None
+    assert current["change_net_oi_position_pp"] is None
+    assert current["change_net_oi_open_interest_pp"] is None
+    assert current["reference_28d_date"] is None

@@ -26,7 +26,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: oil-cot-update
+  # Keep preview jobs from canceling a production refresh or Pages deployment.
+  group: ${{ github.event_name == 'pull_request' && format('oil-cot-pr-{0}', github.event.pull_request.number) || 'oil-cot-update' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -104,7 +105,7 @@ jobs:
           python -m pip install 'playwright>=1.50,<2'
           python -m playwright install chromium
 
-      - name: Test first-load and tab-switching chart widths
+      - name: Test chart rendering, date alignment and downloads
         if: github.event_name == 'pull_request'
         env:
           PYTHONPATH: src
