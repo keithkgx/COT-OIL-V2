@@ -145,20 +145,44 @@ function draw(id,traces,layout={}){const el=$(id);if(!el||el.closest('.page.hidd
  const result=Plotly.react(el,traces,finalLayout,chartOpts);
  Promise.resolve(result).then(()=>requestAnimationFrame(()=>{if(!el.closest('.page.hidden')&&el.clientWidth>0)Plotly.Plots.resize(el)})).catch(err=>console.error('Chart resize failed:',err));
 }
-function commentary(r){
-if(!r)return '<p class="muted">No observation available for this market and as-of report date.</p>';
-const market=esc(r.market_label),net=signed(r.net),share=pct(r.net_oi_pct);
-if(!isNumber(r.change_long)||!isNumber(r.change_short))return '<p>'+market+' '+esc(document.getElementById('cohort').value)+' net exposure is <strong>'+net+' contracts</strong> ('+share+' of OI). No prior observation available for attribution.</p>';
-const dl=r.change_long,ds=r.change_short,delta=r.change_report,prior=esc(r.previous_date||'the prior report');
-const dominant=Math.abs(dl)>=Math.abs(ds)?'long exposure':'short exposure';
-const direction=delta>0?'increased':delta<0?'decreased':'was unchanged';
-const p=r.net_oi_pctile_3y;let range='Insufficient history for a three-year ranking.';
-if(isNumber(p)){const q=Number(p),loc=q>=90?'near the top':q>=75?'in the upper quartile':q<=10?'near the bottom':q<=25?'in the lower quartile':'near the middle';range='Net/OI at the '+ordinal(q)+' percentile is '+loc+' of its three-year historical distribution.';}
-let month='';if(isNumber(r.change_28d))month=' Four-week change: '+signed(r.change_28d)+' contracts.';
-return '<p><strong>'+market+':</strong> '+esc(document.getElementById('cohort').value)+' net positioning '+direction+' by '+n(Math.abs(delta))+' contracts to <strong>'+net+'</strong> ('+share+' of OI) since '+prior+'.</p>'+
-'<p>Longs changed '+signed(dl)+' and shorts changed '+signed(ds)+'; changes in '+dominant+' dominated the net change. '+range+month+'</p>'+
-'<p class="small">Changes in reported holdings, not identified trades or a price forecast.</p>';
+function marketRegime(r){
+ if(!r||!isNumber(r.net_oi_pctile_3y))return 'Insufficient comparable history';
+ const p=Number(r.net_oi_pctile_3y), m=r.change_28d;
+ if(p>=75&&isNumber(m)&&m<0)return 'Elevated, but net positioning is being reduced';
+ if(p<=25&&isNumber(m)&&m>0)return 'Depressed, but net positioning is rebuilding';
+ if(p>=75&&isNumber(m)&&m>0)return 'Elevated and still expanding';
+ if(p<=25&&isNumber(m)&&m<0)return 'Depressed and still weakening';
+ if(p>=75)return 'In the upper historical quartile';
+ if(p<=25)return 'In the lower historical quartile';
+ return 'Near the middle of its three-year distribution';
 }
+function contributionStory(r){
+ if(!r||!isNumber(r.change_long)||!isNumber(r.change_short))return 'Latest attribution unavailable.';
+ const l=Number(r.change_long),h=Number(r.change_short);
+ let driver='';
+ if(l>0&&h>0)driver='Both long and short holdings increased';
+ else if(l<0&&h<0)driver='Both long and short holdings decreased';
+ else if(l>=0&&h<=0)driver='Long positions increased and shorts were reduced';
+ else if(l<=0&&h>=0)driver='Long positions decreased while shorts increased';
+ else driver='One side of the market was largely unchanged';
+ const lead=Math.abs(l)>Math.abs(h)?'the long side':Math.abs(l)<Math.abs(h)?'the short side':'both sides equally';
+ return driver+'; '+lead+' contributed more to the net change.';
+}
+function commentary(r){
+ if(!r)return '<p>No comparable observation is available for this market on the selected as-of date.</p>';
+ const label=esc(r.market_label),group=esc(document.getElementById('cohort').value);
+ const sign=r.net>=0?'net long':'net short';
+ const d=isNumber(r.change_report)?signed(r.change_report)+' contracts':'unavailable';
+ const m=isNumber(r.change_28d)?signed(r.change_28d)+' contracts':'unavailable';
+ const pp=isNumber(r.change_net_oi_pp)?signedDecimal(r.change_net_oi_pp,2)+' percentage points':'unavailable';
+ const since=r.previous_date?esc(r.previous_date):'the previous observation';
+ const rank=isNumber(r.net_oi_pctile_3y)?ordinal(r.net_oi_pctile_3y)+' percentile':'unavailable';
+ return '<p><strong>Current position:</strong> '+group+' is <strong>'+sign+' '+n(Math.abs(r.net))+' contracts</strong> ('+pct(r.net_oi_pct)+' of total OI). The 3Y net/OI reading is at the <strong>'+rank+'</strong> — '+esc(marketRegime(r).toLowerCase())+'.</p>'+
+ '<p><strong>Recent positioning:</strong> Report-to-report net change is <strong>'+d+'</strong> ('+pp+' in net/OI), from '+since+'. Four-week net change: <strong>'+m+'</strong>.</p>'+
+ '<p><strong>Drivers:</strong> '+esc(contributionStory(r))+' Longs changed '+signed(r.change_long)+' contracts and shorts '+signed(r.change_short)+' contracts.</p>'+
+ '<p class="small">Descriptive changes in reported holdings; not identified transactions, a price signal, or an estimate of unreported trades.</p>';
+}
+function signedDecimal(v,decimals=1){if(!isNumber(v))return '—';const x=Number(v);return (x>0?'+':'')+x.toFixed(decimals)}
 function marketOptions(){for(const m of DATA.markets.filter(z=>z.enabled)){const o=document.createElement('option');o.value=m.key;o.textContent=m.label;$('market').appendChild(o)}$('market').value='WTI'}
 function renderOverview(s,r){
 const rows=DATA.markets.filter(m=>m.enabled).map(m=>atMarket(m,s)).filter(Boolean);
