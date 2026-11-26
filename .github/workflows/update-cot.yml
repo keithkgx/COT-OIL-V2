@@ -27,7 +27,7 @@ permissions:
 
 concurrency:
   group: oil-cot-update
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   update:
@@ -79,7 +79,7 @@ jobs:
           page = Path('dashboard/index.html')
           assert page.exists() and page.stat().st_size > 100_000
           text = page.read_text(encoding='utf-8')
-          for needle in ('id="asof"', 'id="desk-brief"', 'id="flows-chart"', '25'):
+          for needle in ('id="asof"', 'id="kpis"', 'id="flows-chart"', 'id="overview-chart"'):
               assert needle in text, needle
           print(f'Dashboard preview generated: {page.stat().st_size:,} bytes')
           PY
@@ -97,6 +97,27 @@ jobs:
         env:
           PYTHONPATH: src
         run: python -m oilcot.cli build
+
+      - name: Install Playwright Chromium for visual sizing smoke test
+        if: github.event_name == 'pull_request'
+        run: |
+          python -m pip install 'playwright>=1.50,<2'
+          python -m playwright install chromium
+
+      - name: Test first-load and tab-switching chart widths
+        if: github.event_name == 'pull_request'
+        env:
+          PYTHONPATH: src
+        run: python tests/browser_smoke.py
+
+      - name: Upload browser screenshots
+        if: ${{ always() && github.event_name == 'pull_request' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: oil-cot-browser-smoke-screenshots
+          path: oil-positioning-intelligence/browser-test-output
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Fetch official CFTC data and rebuild dashboard
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
