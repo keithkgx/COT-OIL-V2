@@ -1,6 +1,6 @@
 # Developer guide — Oil Positioning Intelligence
 
-[Public project overview](../README.md) · [Live dashboard](https://keithkgx.github.io/COT-OIL-V2/) · [Market coverage research](docs/market-coverage.md)
+[Public project overview](../README.md) · [Live dashboard](https://keithkgx.github.io/COT-OIL-V2/) · [Market coverage research](docs/market-coverage.md) · [ICE integration specification](docs/ice-brent-gasoil-integration.md)
 
 This folder holds the Python data-processing pipeline, source HTML template, official historical CFTC observations, tests, and generated standalone dashboard. The parent repository contains the GitHub Actions workflow.
 
